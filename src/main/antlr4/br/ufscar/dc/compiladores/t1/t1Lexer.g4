@@ -1,21 +1,32 @@
 lexer grammar t1Lexer;
 
-PALAVRA_CHAVE 
-	:	'DECLARACOES' | 'ALGORITMO' | 'INT' | 'REAL' | 'ATRIBUIR' | 'A' | 'LER' | 'IMPRIMIR' | 'SE' | 'ENTAO' 
-	| 'ENQUANTO' | 'INICIO' | 'FIM' | 'E' | 'OU' 
-	; 
-NUMINT	: ('+'|'-')?('0'..'9')+
+Algoritmo
+	: 'algoritmo'
 	;
-NUMREAL	: ('+'|'-')?('0'..'9')+ ('.' ('0'..'9')+)?
+Fim_algoritmo
+	: 'fim_algoritmo'
 	;
-VARIAVEL : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9')*
-	 ;
-CADEIA 	: '\'' ( ESC_SEQ | ~('\''|'\\') )* '\''
+Declare
+	: 'declare'
 	;
-fragment
-ESC_SEQ	: '\\\'';
+Literal
+	: 'literal'
+	;
+Inteiro
+	: 'inteiro'
+	;
+Leia
+	: 'leia'
+	;
+Escreva
+	: 'escreva'
+	;
+IDENT : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9')*
+	;
+CADEIA : ('"'.*?'"')
+	;
 COMENTARIO
-    :   '%' ~('\n'|'\r')* '\r'? '\n' {skip();}
+    :   ('{'.*?'}') {skip();}
     ;
 WS  :   ( ' '
         | '\t'
@@ -23,9 +34,7 @@ WS  :   ( ' '
         | '\n'
         ) {skip();}
     ;
-OP_REL	:	'>' | '>=' | '<' | '<=' | '<>' | '='
-	;
-OP_ARIT	:	'+' | '-' | '*' | '/'
+COMMA	:	','
 	;
 DELIM	:	':'
 	;
