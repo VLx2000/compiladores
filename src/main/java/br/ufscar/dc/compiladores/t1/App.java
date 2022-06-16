@@ -19,7 +19,7 @@ public class App {
             t1Lexer lex = new t1Lexer(cs);
             Token t = null;
             while ((t = lex.nextToken()).getType() != Token.EOF) {
-                System.out.println("<" + "\'" + t.getText()  + "\'" + "," + t1Lexer.VOCABULARY.getDisplayName(t.getType()) + ">");
+                pw.printf("<" + "\'" + t.getText()  + "\'" + "," + t1Lexer.VOCABULARY.getDisplayName(t.getType()) + ">\n");
             }
 
         } catch (IOException ex) {
