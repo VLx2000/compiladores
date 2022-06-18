@@ -69,6 +69,32 @@ Faca
 Enquanto
 	: 'enquanto'
 	;
+Registro: 'registro'
+	;
+Fim_registro: 'fim_registro'
+	;
+Tipo: 'tipo'
+	;
+Var: 'var'
+	;
+Procedimento: 'procedimento'
+	;
+Fim_procedimento:'fim_procedimento'
+	;
+
+Retorne: 'retorne'
+	;
+Funcao: 'funcao'
+	;
+Fim_funcao: 'fim_funcao'
+	;
+
+Constante: 'constante';
+
+Falso: 'falso';
+
+Verdadeiro: 'verdadeiro';
+
 E	
 	: 'e'
 	;
@@ -82,7 +108,7 @@ NUM_REAL
 	: ('0'..'9')+ ('.' ('0'..'9')+)?
 	;
 IDENT
-	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9')*
+	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
 	;
 CADEIA
 	: ('"'.*?'"')
