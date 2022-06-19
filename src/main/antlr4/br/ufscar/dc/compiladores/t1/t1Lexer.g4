@@ -110,12 +110,27 @@ NUM_REAL
 IDENT
 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
 	;
-CADEIA
-	: ('"'.*?'"')
+
+CADEIA 	
+	: '"' ( ESC_SEQ | ~('"'|'\\'|'\n') )* '"'
 	;
+
+CADEIA_N_FECHADA
+	: '"'.*?~('"')
+	;
+
+fragment ESC_SEQ	
+	: '\\\''
+	;
+
 COMENTARIO
-    :   ('{'.*?'}') {skip();}
+    : '{' ~('\n'|'\r')* '}' {skip();}
     ;
+
+COMENTARIO_N_FECHADO
+	: '{'.*?~('}')
+	;
+
 WS  :   ( ' '
         | '\t'
         | '\r'

@@ -4,4 +4,4 @@
 ```chmod +x ./script.sh```
 
 ### Para executar
-```./script.sh```
+```mvn clean package && ./script.sh```
