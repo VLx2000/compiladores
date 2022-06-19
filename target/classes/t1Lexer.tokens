@@ -64,6 +64,7 @@ FECHACOL=63
 CHAPEU=64
 AND=65
 RESTO=66
+ERRO=67
 'algoritmo'=1
 'fim_algoritmo'=2
 'declare'=3
