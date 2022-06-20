@@ -20,25 +20,31 @@ public class App {
             Token t = null;
             boolean erro = false;
             int line;
-            String Regra, token;
+            String regra, token;
             while ((t = lex.nextToken()).getType() != Token.EOF && !erro) {
                 line = t.getLine();
                 token = t.getText();
-                Regra = t1Lexer.VOCABULARY.getDisplayName(t.getType());
-                if (Regra.equals("ERRO")){
+
+                if ((t.getType() > 1 && t.getType() < 7) || (t.getType() >= 19 && t.getType() <= 21)) {
+                    regra = t1Lexer.VOCABULARY.getDisplayName(t.getType());
+                } else {
+                    regra = "\'" + token + "\'";
+                }
+
+                if (regra.equals("ERRO")){
                     pw.write("Linha " + line + ": " + token + " - simbolo nao identificado\n");
                     erro = true;
                 }
-                else if (Regra.equals("COMENTARIO_N_FECHADO")){
+                else if (regra.equals("COMENTARIO_N_FECHADO")){
                     pw.write("Linha " + line + ": comentario nao fechado\n");
                     erro = true;
                 }
-                else if (Regra.equals("CADEIA_N_FECHADA")){
+                else if (regra.equals("CADEIA_N_FECHADA")){
                     pw.write("Linha " + line + ": cadeia literal nao fechada\n");
                     erro = true;
                 }
                 else {
-                    pw.write("<\'" + token + "\'," + Regra + ">\n");
+                    pw.write("<\'" + token + "\'," + regra + ">\n");
                 }
             }
             pw.close();
