@@ -115,21 +115,15 @@ CADEIA
 	: '"' ( ESC_SEQ | ~('"'|'\\'|'\n') )* '"'
 	;
 
-CADEIA_N_FECHADA
-	: '"'.*?~('"')
-	;
 
 fragment ESC_SEQ	
 	: '\\\''
 	;
 
 COMENTARIO
-    : '{' ~('\n'|'\r')* '}' {skip();}
+    : '{' ~('\n'|'\r'|'}')* '}' {skip();}
     ;
 
-COMENTARIO_N_FECHADO
-	: '{'.*?~('}')
-	;
 
 WS  :   ( ' '
         | '\t'
@@ -182,6 +176,13 @@ CHAPEU	:	'^'
 AND	:	'&'
 	;
 RESTO	:	'%'
+	;
+
+COMENTARIO_N_FECHADO
+	: '{'.*?~('}')
+	;
+CADEIA_N_FECHADA
+	: '"'.*?~('"')
 	;
 
 ERRO: .;

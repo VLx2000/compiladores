@@ -1,2 +1,3 @@
-br/ufscar/dc/compiladores/t1/App.class
-br/ufscar/dc/compiladores/t1/t1Lexer.class
+br\ufscar\dc\compiladores\t1\t1Lexer.class
+br\ufscar\dc\compiladores\t1\t1Lexer.interp
+t1Lexer.tokens
