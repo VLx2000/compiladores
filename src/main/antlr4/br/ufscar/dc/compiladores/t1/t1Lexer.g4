@@ -44,7 +44,10 @@ DELIM					:	':';
 ENDERECO				:	'&';
 
 // Erros
+
+//Caso seja aberto um comentário, e venham sendo recbidos caracteres sem que haja fechamento das chaves, retorna erro de comentario não fechado
 COMENTARIO_N_FECHADO 	: '{'.*?~('}');
+//Caso seja aberta uma cadeia, e venham sendo recbidos caracteres sem que haja fechamento das das aspas, retorna erro de cadeia não fechada
 CADEIA_N_FECHADA		: '"'.*?~('"');
 //Caso não se tenha encontrado nenhuma correspondência entre o lexema e as regras definidas,o lexema é considerado como um símbolo desconhecido
 SIMBOLO_DESCONHECIDO	: .;
