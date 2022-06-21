@@ -29,7 +29,21 @@ gcc \
 "769699,769681,769734" \
 t1
 ```
+> É possível que o comando ou script não funcione corretamente devido a espaços no diretório do arquivo
 
 ## Windows
+### Dependências
+> Java 11
+```
+```
+
+### Para executar
+#### Compile o programa
+```
+```
+
+#### E execute
+```
+```
 
 > Obs: Os casos de teste e o corretor automático já estão inclusos no projeto
