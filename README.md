@@ -20,7 +20,7 @@ chmod +x ./script.sh && ./script.sh
 
 #### Ou execute o seguinte comando na pasta do projeto
 ```
-chmod +x ./target/t1-1.0-SNAPSHOT-jar-with-dependencies.jar
+chmod +x ./target/t1-1.0-SNAPSHOT-jar-with-dependencies.jar &&
 java -jar ./corretor-automatico/corretor-automatico.jar \
 "java -jar $PWD/target/t1-1.0-SNAPSHOT-jar-with-dependencies.jar" \
 gcc \
