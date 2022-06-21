@@ -30,6 +30,8 @@ public class App {
                 // Obtendo token atual
                 token = t.getText();
 
+                // Definindo se regra será equivalente ao lexema, ou à própria palavra-chave 
+                // com base no tipo do token
                 if ((t.getType() > 1 && t.getType() < 7) || (t.getType() >= 19 && t.getType() <= 21)) {
                     regra = t1Lexer.VOCABULARY.getDisplayName(t.getType());
                 } else {
