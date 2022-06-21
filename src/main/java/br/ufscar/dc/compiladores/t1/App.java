@@ -39,7 +39,7 @@ public class App {
                 }
 
                 // Condição em que algum token não foi identificado
-                if (regra.equals("ERRO")){
+                if (regra.equals("SIMBOLO_DESCONHECIDO")){
                     pw.write("Linha " + line + ": " + token + " - simbolo nao identificado\n");
                     erro = true;
                 }

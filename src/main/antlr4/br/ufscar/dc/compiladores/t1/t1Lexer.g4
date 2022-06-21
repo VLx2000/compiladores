@@ -20,6 +20,9 @@ CADEIA 					: '"' ( ESC_SEQ | ~('"'|'\\'|'\n') )* '"';
 						fragment ESC_SEQ : '\\\'';
 
 // Ignorando comentários
+//dentro do comentário, são proibidos \n, \r e }. 
+//O fechamento de chaves é proíbido para que não sejam aceitos comentários com o final }},
+//visto que o algorítimo utiliza a estratégia greedy e aceitaria o lexema considerando } como parte do comentário
 COMENTARIO 				: '{' ~('\n'|'\r'|'}')* '}' {skip();};
 
 // Ignorando espaços, tabulação, retorno e quebra de linha
@@ -43,4 +46,5 @@ ENDERECO				:	'&';
 // Erros
 COMENTARIO_N_FECHADO 	: '{'.*?~('}');
 CADEIA_N_FECHADA		: '"'.*?~('"');
-ERRO					: .;
+//Caso não se tenha encontrado nenhuma correspondência entre o lexema e as regras definidas,o lexema é considerado como um símbolo desconhecido
+SIMBOLO_DESCONHECIDO	: .;
