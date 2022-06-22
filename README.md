@@ -1,4 +1,11 @@
 # compiladores-t1
+
+## Integrantes ##
+
+- Lucas Vinícius Domingues 769699
+- Rafael Yoshio Yamawaki Murata 769681
+- Victor Luís Aguilar Antunes 769734
+
 ## Dependências
 - Java 11
 - Maven
