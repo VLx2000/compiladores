@@ -34,16 +34,19 @@ t1
 ## Windows
 ### Dependências
 > Java 11
+gcc
 ```
 ```
 
 ### Para executar
 #### Compile o programa
 ```
+mvn clean package
 ```
 
-#### E execute
+#### E execute no diretório ```compiladores-t1```
 ```
+java -jar .\corretor-automatico\corretor-automatico.jar  "java -jar .\target\t1-1.0-SNAPSHOT-jar-with-dependencies.jar" gcc ./tmp  .\casos-de-teste\ "769699,769681,769734" t1
 ```
 
 > Obs: Os casos de teste e o corretor automático já estão inclusos no projeto
