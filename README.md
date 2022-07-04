@@ -1,4 +1,4 @@
-# compiladores-t1
+# Compiladores: Desenvolvimento de analisadores
 
 ## Integrantes ##
 
@@ -35,7 +35,7 @@ gcc \
 ./tmp \
 ./casos-de-teste \
 "769699,769681,769734" \
-t1
+all
 ```
 > É possível que o comando ou script não funcione corretamente devido a espaços no diretório do arquivo
 
@@ -48,16 +48,16 @@ t1
 mvn clean package
 ```
 
-#### E execute no diretório ```compiladores-t1```
+#### E execute no diretório ```compiladores```
 ```
-java -jar .\corretor-automatico\corretor-automatico.jar  "java -jar .\target\t1-1.0-SNAPSHOT-jar-with-dependencies.jar" gcc ./tmp  .\casos-de-teste\ "769699,769681,769734" t1
+java -jar .\corretor-automatico\corretor-automatico.jar  "java -jar .\target\t1-1.0-SNAPSHOT-jar-with-dependencies.jar" gcc ./tmp  .\casos-de-teste\ "769699,769681,769734" all
 ```
 ## Outros
 ```
 mvn clean package
 ```
 ```
-java -jar ARG1 "java -jar ARG2" ARG3 ARG4 ARG5 "769699,769681,769734" t1
+java -jar ARG1 "java -jar ARG2" ARG3 ARG4 ARG5 "769699,769681,769734" all
 ```
 Substituindo:
 - ARG1 pelo caminho absoluto de corretor-automatico.jar
