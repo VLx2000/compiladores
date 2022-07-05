@@ -53,3 +53,66 @@ COMENTARIO_N_FECHADO 	: '{'.*?~('}');
 CADEIA_N_FECHADA		: '"'.*?~('"');
 //Caso não se tenha encontrado nenhuma correspondência entre o lexema e as regras definidas,o lexema é considerado como um símbolo desconhecido
 SIMBOLO_DESCONHECIDO	: .;
+
+programa
+	:	declaracoes 'algoritmo' corpo 'fim_algoritmo'
+	;
+	
+declaracoes
+	:	decl_local_global+
+	;
+	
+decl_local_global
+	:	declaracao_local | declaracao_global
+	;
+
+declaracao_local
+	:	'declare' variavel
+	|	'constante' IDENT ':' tipo_basico '=' valor_constante
+	|	'tipo' IDENT ':' tipo
+	;
+	
+variavel
+	:	identificador (',' identificador)+ ':' tipo
+	;
+
+identificador
+	:	IDENT ('.' IDENT) dimensao
+	;
+
+dimensao
+	:	('[' exp_aritmetica ']')
+	;
+
+tipo
+	:	registro | tipo_estendido
+	;
+
+tipo_basico
+	:	'literal' | 'inteiro' | 'real' | 'logico'
+	;
+
+tipo_basico_ident
+	:	tipo_basico | IDENT
+	;
+
+tipo_estendido
+	:	('^')? tipo_basico_ident
+	;
+
+valor_constante
+	:	CADEIA | NUM_INT | NUM_REAL | 'verdadeiro' | 'falso'
+	;
+
+registro
+	:	'registro' (variavel)+ 'fim_registro'
+	;
+
+declaracao_global
+	:	'procedimento' IDENT '(' (parametros)? ')' (declaracao_local)+ (cmd)+ 'fim_procedimento'
+	|	'funcao' IDENT '(' (parametros)? ')' ':' tipo_estendido (declaracao_local)+ (cmd)+ 'fim_funcao'
+	;
+
+parametro
+	:
+	;
