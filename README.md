@@ -23,9 +23,9 @@ mvn clean package
 
 #### E rode o script com 
 ```
-chmod +x ./script.sh && ./script.sh
+chmod +x ./script.sh && ./script.sh tx
 ```
-
+> Sendo x o numero do trabalho
 #### Ou execute o seguinte comando na pasta do projeto
 ```
 chmod +x ./target/t1-1.0-SNAPSHOT-jar-with-dependencies.jar &&
@@ -35,7 +35,7 @@ gcc \
 ./tmp \
 ./casos-de-teste \
 "769699,769681,769734" \
-all
+t1,t2,t3,t4,t5
 ```
 > É possível que o comando ou script não funcione corretamente devido a espaços no diretório do arquivo
 
@@ -50,14 +50,14 @@ mvn clean package
 
 #### E execute no diretório ```compiladores```
 ```
-java -jar .\corretor-automatico\corretor-automatico.jar  "java -jar .\target\t1-1.0-SNAPSHOT-jar-with-dependencies.jar" gcc ./tmp  .\casos-de-teste\ "769699,769681,769734" all
+java -jar .\corretor-automatico\corretor-automatico.jar  "java -jar .\target\t1-1.0-SNAPSHOT-jar-with-dependencies.jar" gcc ./tmp  .\casos-de-teste\ "769699,769681,769734" t1,t2,t3,t4,t5
 ```
 ## Outros
 ```
 mvn clean package
 ```
 ```
-java -jar ARG1 "java -jar ARG2" ARG3 ARG4 ARG5 "769699,769681,769734" all
+java -jar ARG1 "java -jar ARG2" ARG3 ARG4 ARG5 "769699,769681,769734" t1,t2,t3,t4,t5
 ```
 Substituindo:
 - ARG1 pelo caminho absoluto de corretor-automatico.jar
