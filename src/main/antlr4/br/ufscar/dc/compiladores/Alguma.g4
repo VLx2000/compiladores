@@ -1,4 +1,4 @@
-lexer grammar t1Lexer;
+lexer grammar Alguma;
 
 // Palavras chaves
 PALAVRA_CHAVE 			: 'algoritmo' | 'fim_algoritmo' | 'declare' | 'var' | 'tipo' | 'literal' 

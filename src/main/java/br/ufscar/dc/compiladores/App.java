@@ -1,4 +1,4 @@
-package br.ufscar.dc.compiladores.t1;
+package br.ufscar.dc.compiladores;
 
 import java.io.IOException;
 import java.io.FileWriter;
@@ -16,7 +16,7 @@ public class App {
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))){
             CharStream cs = CharStreams.fromFileName(entrada);
-            t1Lexer lex = new t1Lexer(cs);
+            Alguma lex = new Alguma(cs);
             Token t = null;
             boolean erro = false;   // variável para controle de execução
             int line;
@@ -33,7 +33,7 @@ public class App {
                 // Definindo se regra será equivalente ao lexema, ou à própria palavra-chave 
                 // com base no tipo do token
                 if ((t.getType() > 1 && t.getType() < 7) || (t.getType() >= 19 && t.getType() <= 21)) {
-                    regra = t1Lexer.VOCABULARY.getDisplayName(t.getType());
+                    regra = Alguma.VOCABULARY.getDisplayName(t.getType());
                 } else {
                     regra = "\'" + token + "\'";
                 }
