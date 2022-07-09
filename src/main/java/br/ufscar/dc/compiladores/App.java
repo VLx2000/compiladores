@@ -16,7 +16,7 @@ public class App {
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))){
             CharStream cs = CharStreams.fromFileName(entrada);
-            Alguma lex = new Alguma(cs);
+            LA lex = new LA(cs);
             Token t = null;
             boolean erro = false;   // variável para controle de execução
             int line;

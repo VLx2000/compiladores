@@ -1,4 +1,4 @@
-lexer grammar Alguma;
+lexer grammar LA;
 
 // Palavras chaves
 PALAVRA_CHAVE 			: 'algoritmo' | 'fim_algoritmo' | 'declare' | 'var' | 'tipo' | 'literal' 
@@ -59,7 +59,7 @@ programa
 	;
 	
 declaracoes
-	:	decl_local_global+
+	:	decl_local_global*
 	;
 	
 decl_local_global
@@ -81,7 +81,7 @@ identificador
 	;
 
 dimensao
-	:	('[' exp_aritmetica ']')
+	:	('[' exp_aritmetica ']')*
 	;
 
 tipo
@@ -105,7 +105,7 @@ valor_constante
 	;
 
 registro
-	:	'registro' (variavel)+ 'fim_registro'
+	:	'registro' (variavel)* 'fim_registro'
 	;
 
 declaracao_global
@@ -115,4 +115,58 @@ declaracao_global
 
 parametro
 	:
+	;
+parametros
+	:	parametro (',' parametro)*;
+
+corpo
+	: (declaracao_local)* (cmd)*
+	;
+cmd
+	: cmdLeia|cmdEscreva|cmdSe|cmdCaso|cmdPara|cmdEnquanto|cmdFaca|cmdAtribuicao|cmdChamada|cmdRetorne
+	;
+cmdLeia
+	: 'leia' '(' ('^')? identificador (',' '^'? identificador)* ')'
+	;
+cmdEscreva
+	: 'escreva' '(' expressao (',' expressao)*')'
+	;
+cmdSe
+	: 'se' expressao 'entao' cmd* ('senao' cmd*)? 'fim_se'
+	;
+cmdCaso
+	: 'caso' exp_aritmetica 'seja' selecao ('senao' cmd*)? 'fim_caso'
+	;
+cmdPara
+	: 'para' IDENT '<-' exp_aritmetica 'ate' exp_aritmetica 'faca' cmd* 'fim_para'
+	;
+cmdEnquanto
+	: 'enquanto' expressao 'faca' cmd* 'fim_enquanto'
+	;
+cmdFaca
+	: 'faca' cmd* 'ate' expressao
+	;
+cmdAtribuicao
+	: '^'? identificador '<-' expressao
+	;
+cmdChamada
+	: IDENT '(' expressao (',' expressao)* ')'
+	;
+cmdRetorne
+	: 'retorne' expressao
+	;
+selecao
+	: item_selecao+
+	;
+item_selecao
+	: constantes ':' (cmd)+
+	;
+constantes
+	: numero_intervalo (',' numero_intervalo)*
+	;
+numero_intevalo
+	: op_unario? NUM_INT ('..' op_unario? NUM_INT)?
+	;
+op_unario
+	: '-'
 	;
