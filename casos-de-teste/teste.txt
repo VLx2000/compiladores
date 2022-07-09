@@ -1,5 +1,6 @@
 { leitura de nome e idade com escrita de mensagem usando estes dados }
-algoritmo
+
+
 	declare
 		nome: literal
 	declare
@@ -11,4 +12,5 @@ algoritmo
 
 	{ saída da mensagem na tela }
 	escreva(nome, " tem ", idade, " anos.")
+
 fim_algoritmo

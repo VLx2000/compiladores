@@ -1,4 +1,4 @@
-lexer grammar LA;
+grammar LA;
 
 // Palavras chaves
 PALAVRA_CHAVE 			: 'algoritmo' | 'fim_algoritmo' | 'declare' | 'var' | 'tipo' | 'literal' 
@@ -55,7 +55,7 @@ CADEIA_N_FECHADA		: '"'.*?~('"');
 SIMBOLO_DESCONHECIDO	: .;
 
 programa
-	:	declaracoes 'algoritmo' corpo 'fim_algoritmo'
+	:	declaracoes 'algoritmo' corpo 'fim_algoritmo' EOF
 	;
 	
 declaracoes
@@ -73,11 +73,11 @@ declaracao_local
 	;
 	
 variavel
-	:	identificador (',' identificador)+ ':' tipo
+	:	identificador (',' identificador)* ':' tipo
 	;
 
 identificador
-	:	IDENT ('.' IDENT) dimensao
+	:	IDENT ('.' IDENT)* dimensao
 	;
 
 dimensao
@@ -109,15 +109,17 @@ registro
 	;
 
 declaracao_global
-	:	'procedimento' IDENT '(' (parametros)? ')' (declaracao_local)+ (cmd)+ 'fim_procedimento'
-	|	'funcao' IDENT '(' (parametros)? ')' ':' tipo_estendido (declaracao_local)+ (cmd)+ 'fim_funcao'
+	:	'procedimento' IDENT '(' (parametros)? ')' (declaracao_local)* (cmd)* 'fim_procedimento'
+	|	'funcao' IDENT '(' (parametros)? ')' ':' tipo_estendido (declaracao_local)* (cmd)* 'fim_funcao'
 	;
 
 parametro
-	:
+	:	('var')? identificador (',' identificador)* ':' tipo_estendido
 	;
+
 parametros
-	:	parametro (',' parametro)*;
+	:	parametro (',' parametro)*
+	;
 
 corpo
 	: (declaracao_local)* (cmd)*
@@ -156,10 +158,10 @@ cmdRetorne
 	: 'retorne' expressao
 	;
 selecao
-	: item_selecao+
+	: item_selecao*
 	;
 item_selecao
-	: constantes ':' (cmd)+
+	: constantes ':' (cmd)*
 	;
 constantes
 	: numero_intervalo (',' numero_intervalo)*

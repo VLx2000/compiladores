@@ -3,20 +3,23 @@ package br.ufscar.dc.compiladores;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.Token;
 
 public class App {
 
-    public static void main(String[] args) {
+    public static void main(String args[]) throws IOException {
 
         String entrada = args[0];
         String saida = args[1];
 
+        CharStream cs = CharStreams.fromFileName(entrada);
+        LALexer lex = new LALexer(cs);
+/*
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))){
-            CharStream cs = CharStreams.fromFileName(entrada);
-            LA lex = new LA(cs);
             Token t = null;
             boolean erro = false;   // variável para controle de execução
             int line;
@@ -24,19 +27,13 @@ public class App {
 
             // O loop continuará até ler todo o arquivo ou até haver algum
             // erro: token não identificado, comentario ou cadeia não fechada
-            while ((t = lex.nextToken()).getType() != Token.EOF && !erro) {
+            /*while ((t = lex.nextToken()).getType() != Token.EOF && !erro) {
                 // Obtendo linha atual
                 line = t.getLine();
                 // Obtendo token atual
                 token = t.getText();
-
-                // Definindo se regra será equivalente ao lexema, ou à própria palavra-chave 
-                // com base no tipo do token
-                if ((t.getType() > 1 && t.getType() < 7) || (t.getType() >= 19 && t.getType() <= 21)) {
-                    regra = Alguma.VOCABULARY.getDisplayName(t.getType());
-                } else {
-                    regra = "\'" + token + "\'";
-                }
+                // Obtendo tipo
+                regra = LALexer.VOCABULARY.getDisplayName(t.getType());
 
                 // Condição em que algum token não foi identificado
                 if (regra.equals("SIMBOLO_DESCONHECIDO")){
@@ -60,6 +57,14 @@ public class App {
             }
             pw.close(); // Fechando arquivo escrito
         } catch (IOException ex) {
-        }
+        }*/
+        CommonTokenStream tokens = new CommonTokenStream(lex);
+        LAParser parser = new LAParser(tokens);
+
+        // Registrando o error lister personalizado
+        MensagensCustomizadas msgs = new MensagensCustomizadas();
+        parser.addErrorListener(msgs);
+
+        parser.programa();
     }
 }
