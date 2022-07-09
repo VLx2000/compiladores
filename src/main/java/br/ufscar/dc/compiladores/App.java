@@ -20,14 +20,25 @@ public class App {
         LALexer lex = new LALexer(cs);
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))) {
-            Token t = null;
+
+            CommonTokenStream tokens = new CommonTokenStream(lex);
+            LAParser parser = new LAParser(tokens);
+
+            // Registrando o error lister personalizado
+            MensagensCustomizadas msgs = new MensagensCustomizadas(pw);
+            //parser.removeErrorListeners();
+            parser.addErrorListener(msgs);
+
+            parser.programa();
+
+/*             Token t = null;
             boolean erro = false; // variável para controle de execução
             int line;
             String regra, token;
 
             // O loop continuará até ler todo o arquivo ou até haver algum
             // erro: token não identificado, comentario ou cadeia não fechada
-            /*while ((t = lex.nextToken()).getType() != Token.EOF && !erro) {
+            while ((t = lex.nextToken()).getType() != Token.EOF && !erro) {
                 // Obtendo linha atual
                 line = t.getLine();
                 // Obtendo token atual
@@ -55,17 +66,8 @@ public class App {
                 else {
                     pw.write("<\'" + token + "\'," + regra + ">\n");
                 }
-            }*/
-            CommonTokenStream tokens = new CommonTokenStream(lex);
-            LAParser parser = new LAParser(tokens);
-
-            // Registrando o error lister personalizado
-            MensagensCustomizadas msgs = new MensagensCustomizadas(pw);
-            //parser.removeErrorListeners();
-            parser.addErrorListener(msgs);
-
-            parser.programa();
-
+            }
+ */
             pw.write("Fim da compilacao");
             pw.close(); // Fechando arquivo escrito
         } catch (IOException ex) {
