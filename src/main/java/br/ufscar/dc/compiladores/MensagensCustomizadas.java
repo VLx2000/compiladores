@@ -1,5 +1,8 @@
 package br.ufscar.dc.compiladores;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.BitSet;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
@@ -11,6 +14,11 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.Token;
 
 public class MensagensCustomizadas implements ANTLRErrorListener {
+
+    PrintWriter pw;
+    public MensagensCustomizadas(PrintWriter pw) {
+        this.pw = pw;    
+    }
 
     @Override
     public void reportAmbiguity(Parser arg0, DFA arg1, int arg2, int arg3, boolean arg4, BitSet arg5,
@@ -35,8 +43,6 @@ public class MensagensCustomizadas implements ANTLRErrorListener {
     public void syntaxError(Recognizer<?, ?> arg0, Object arg1, int arg2, int arg3, String arg4,
             RecognitionException arg5) {
         Token t = (Token) arg1;
-        System.out.println("Linha " + arg2 + ": erro sintatico proximo a " + t.getText());
-
+        pw.write("Linha " + arg2 + ": erro sintatico proximo a " + t.getText() + "\n");
     }
-
 }

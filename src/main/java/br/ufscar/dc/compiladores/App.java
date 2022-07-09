@@ -18,10 +18,10 @@ public class App {
 
         CharStream cs = CharStreams.fromFileName(entrada);
         LALexer lex = new LALexer(cs);
-/*
-        try (PrintWriter pw = new PrintWriter(new FileWriter(saida))){
+
+        try (PrintWriter pw = new PrintWriter(new FileWriter(saida))) {
             Token t = null;
-            boolean erro = false;   // variável para controle de execução
+            boolean erro = false; // variável para controle de execução
             int line;
             String regra, token;
 
@@ -36,35 +36,39 @@ public class App {
                 regra = LALexer.VOCABULARY.getDisplayName(t.getType());
 
                 // Condição em que algum token não foi identificado
-                if (regra.equals("SIMBOLO_DESCONHECIDO")){
+                if (regra.equals("SIMBOLO_DESCONHECIDO")) {
                     pw.write("Linha " + line + ": " + token + " - simbolo nao identificado\n");
                     erro = true;
                 }
                 // Condição em que um comentário { } não foi fechado corretamente
-                else if (regra.equals("COMENTARIO_N_FECHADO")){
+                else if (regra.equals("COMENTARIO_N_FECHADO")) {
                     pw.write("Linha " + line + ": comentario nao fechado\n");
                     erro = true;
                 }
                 // Condição em que uma cadeia " " não foi fechada corretamente
-                else if (regra.equals("CADEIA_N_FECHADA")){
+                else if (regra.equals("CADEIA_N_FECHADA")) {
                     pw.write("Linha " + line + ": cadeia literal nao fechada\n");
                     erro = true;
                 }
-                // Se não for um dos casos acima será impresso o token com sua regra neste formato
+                // Se não for um dos casos acima será impresso o token com sua regra neste
+                // formato
                 else {
                     pw.write("<\'" + token + "\'," + regra + ">\n");
                 }
-            }
+            }*/
+            CommonTokenStream tokens = new CommonTokenStream(lex);
+            LAParser parser = new LAParser(tokens);
+
+            // Registrando o error lister personalizado
+            MensagensCustomizadas msgs = new MensagensCustomizadas(pw);
+            //parser.removeErrorListeners();
+            parser.addErrorListener(msgs);
+
+            parser.programa();
+
+            pw.write("Fim da compilacao");
             pw.close(); // Fechando arquivo escrito
         } catch (IOException ex) {
-        }*/
-        CommonTokenStream tokens = new CommonTokenStream(lex);
-        LAParser parser = new LAParser(tokens);
-
-        // Registrando o error lister personalizado
-        MensagensCustomizadas msgs = new MensagensCustomizadas();
-        parser.addErrorListener(msgs);
-
-        parser.programa();
+        }
     }
 }

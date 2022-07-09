@@ -1,27 +1,3 @@
-<'declare','declare'>
-<'nome',IDENT>
-<':',':'>
-<'literal','literal'>
-<'declare','declare'>
-<'idade',IDENT>
-<':',':'>
-<'inteiro','inteiro'>
-<'leia','leia'>
-<'(','('>
-<'nome',IDENT>
-<')',')'>
-<'leia','leia'>
-<'(','('>
-<'idade',IDENT>
-<')',')'>
-<'escreva','escreva'>
-<'(','('>
-<'nome',IDENT>
-<',',','>
-<'" tem "',CADEIA>
-<',',','>
-<'idade',IDENT>
-<',',','>
-<'" anos."',CADEIA>
-<')',')'>
-<'fim_algoritmo','fim_algoritmo'>
+Linha 10: erro sintatico proximo a leia
+Linha 14: erro sintatico proximo a nome
+Fim da compilacao
