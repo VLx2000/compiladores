@@ -31,7 +31,7 @@ public class App {
 
             parser.programa();
 
-/*             Token t = null;
+            Token t = null;
             boolean erro = false; // variável para controle de execução
             int line;
             String regra, token;
@@ -63,12 +63,12 @@ public class App {
                 }
                 // Se não for um dos casos acima será impresso o token com sua regra neste
                 // formato
-                else {
-                    pw.write("<\'" + token + "\'," + regra + ">\n");
-                }
+                // else {
+                //     pw.write("<\'" + token + "\'," + regra + ">\n");
+                // }
             }
- */
-            pw.write("Fim da compilacao");
+ 
+            pw.write("Fim da compilacao\n");
             pw.close(); // Fechando arquivo escrito
         } catch (IOException ex) {
         }

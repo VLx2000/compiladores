@@ -1,7 +1,5 @@
 package br.ufscar.dc.compiladores;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.BitSet;
 
@@ -43,6 +41,12 @@ public class MensagensCustomizadas implements ANTLRErrorListener {
     public void syntaxError(Recognizer<?, ?> arg0, Object arg1, int arg2, int arg3, String arg4,
             RecognitionException arg5) {
         Token t = (Token) arg1;
-        pw.write("Linha " + arg2 + ": erro sintatico proximo a " + t.getText() + "\n");
+
+        if (t.getType() != Token.EOF) {
+            pw.write("Linha " + arg2 + ": erro sintatico proximo a " + t.getText() + "\n");
+        }
+        else {
+            pw.write("Linha " + arg2 + ": erro sintatico proximo a EOF" + "\n");
+        }
     }
 }

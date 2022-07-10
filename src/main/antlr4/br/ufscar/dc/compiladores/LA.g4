@@ -191,7 +191,7 @@ op3
 	: '%'
 	;
 parcela
-	: op_unario (parcela_unario)? | parcela_nao_unario
+	: op_unario? (parcela_unario) | parcela_nao_unario
 	;
 parcela_unario
 	: '^'? identificador
