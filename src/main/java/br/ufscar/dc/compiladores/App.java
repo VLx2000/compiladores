@@ -21,16 +21,6 @@ public class App {
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))) {
 
-            CommonTokenStream tokens = new CommonTokenStream(lex);
-            LAParser parser = new LAParser(tokens);
-
-            // Registrando o error lister personalizado
-            MensagensCustomizadas msgs = new MensagensCustomizadas(pw);
-            //parser.removeErrorListeners();
-            parser.addErrorListener(msgs);
-
-            parser.programa();
-
             Token t = null;
             boolean erro = false; // variável para controle de execução
             int line;
@@ -67,9 +57,25 @@ public class App {
                 //     pw.write("<\'" + token + "\'," + regra + ">\n");
                 // }
             }
- 
+
+            if (!erro) {
+                // Resetando fluxo de tokens para a análise sintática
+                lex.reset();
+
+                CommonTokenStream tokens = new CommonTokenStream(lex);
+                LAParser parser = new LAParser(tokens);
+
+                // Registrando o error lister personalizado
+                MensagensCustomizadas msgs = new MensagensCustomizadas(pw);
+                //parser.removeErrorListeners();
+                parser.addErrorListener(msgs);
+
+                parser.programa();
+            }
+
             pw.write("Fim da compilacao\n");
             pw.close(); // Fechando arquivo escrito
+            
         } catch (IOException ex) {
         }
     }
