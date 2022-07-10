@@ -14,8 +14,10 @@ import org.antlr.v4.runtime.Token;
 public class MensagensCustomizadas implements ANTLRErrorListener {
 
     PrintWriter pw;
-    public MensagensCustomizadas(PrintWriter pw) {
-        this.pw = pw;    
+    boolean erroSintatico;
+    public MensagensCustomizadas(PrintWriter pw, boolean erroSintatico) {
+        this.pw = pw;
+        this.erroSintatico = erroSintatico;    
     }
 
     @Override
@@ -42,11 +44,16 @@ public class MensagensCustomizadas implements ANTLRErrorListener {
             RecognitionException arg5) {
         Token t = (Token) arg1;
 
-        if (t.getType() != Token.EOF) {
-            pw.write("Linha " + arg2 + ": erro sintatico proximo a " + t.getText() + "\n");
+        if (!erroSintatico) {
+            if (t.getType() != Token.EOF) {
+                pw.write("Linha " + arg2 + ": erro sintatico proximo a " + t.getText() + "\n");
+            }
+            else {
+                pw.write("Linha " + arg2 + ": erro sintatico proximo a EOF" + "\n");
+            }
         }
-        else {
-            pw.write("Linha " + arg2 + ": erro sintatico proximo a EOF" + "\n");
-        }
+        erroSintatico = true;
+        pw.write("Fim da compilacao\n");
+        pw.close(); // Fechando arquivo escrito
     }
 }

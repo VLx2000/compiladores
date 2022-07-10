@@ -22,13 +22,12 @@ public class App {
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))) {
 
             Token t = null;
-            boolean erro = false; // variável para controle de execução
-            int line;
-            String regra, token;
+            Integer line;
+            String regra, token, erroLexico = "", resultado = "";
 
             // O loop continuará até ler todo o arquivo ou até haver algum
             // erro: token não identificado, comentario ou cadeia não fechada
-            while ((t = lex.nextToken()).getType() != Token.EOF && !erro) {
+            while ((t = lex.nextToken()).getType() != Token.EOF && erroLexico.isEmpty()) {
                 // Obtendo linha atual
                 line = t.getLine();
                 // Obtendo token atual
@@ -38,42 +37,47 @@ public class App {
 
                 // Condição em que algum token não foi identificado
                 if (regra.equals("SIMBOLO_DESCONHECIDO")) {
-                    pw.write("Linha " + line + ": " + token + " - simbolo nao identificado\n");
-                    erro = true;
+                    erroLexico = ("Linha " + line + ": " + token + " - simbolo nao identificado\n");
+                    resultado += erroLexico;
                 }
                 // Condição em que um comentário { } não foi fechado corretamente
                 else if (regra.equals("COMENTARIO_N_FECHADO")) {
-                    pw.write("Linha " + line + ": comentario nao fechado\n");
-                    erro = true;
+                    erroLexico = ("Linha " + line + ": comentario nao fechado\n");
+                    resultado += erroLexico;
                 }
                 // Condição em que uma cadeia " " não foi fechada corretamente
                 else if (regra.equals("CADEIA_N_FECHADA")) {
-                    pw.write("Linha " + line + ": cadeia literal nao fechada\n");
-                    erro = true;
+                    erroLexico = ("Linha " + line + ": cadeia literal nao fechada\n");
+                    resultado += erroLexico;
                 }
                 // Se não for um dos casos acima será impresso o token com sua regra neste
                 // formato
-                // else {
-                //     pw.write("<\'" + token + "\'," + regra + ">\n");
-                // }
+                else {
+                    resultado += ("<\'" + token + "\'," + regra + ">\n");
+                }
             }
-
-            if (!erro) {
+            if (erroLexico.isEmpty()) {
                 // Resetando fluxo de tokens para a análise sintática
                 lex.reset();
-
+                
                 CommonTokenStream tokens = new CommonTokenStream(lex);
                 LAParser parser = new LAParser(tokens);
 
                 // Registrando o error lister personalizado
-                MensagensCustomizadas msgs = new MensagensCustomizadas(pw);
+                MensagensCustomizadas msgs = new MensagensCustomizadas(pw, false);
                 //parser.removeErrorListeners();
                 parser.addErrorListener(msgs);
 
                 parser.programa();
             }
-
-            pw.write("Fim da compilacao\n");
+            
+            if (!erroLexico.isEmpty()) {
+                pw.write(erroLexico);
+                pw.write("Fim da compilacao\n");
+                pw.close(); // Fechando arquivo escrito
+            }
+        
+            pw.write(resultado);
             pw.close(); // Fechando arquivo escrito
             
         } catch (IOException ex) {

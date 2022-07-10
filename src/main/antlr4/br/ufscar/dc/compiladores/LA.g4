@@ -55,7 +55,7 @@ CADEIA_N_FECHADA		: '"'.*?~('"');
 SIMBOLO_DESCONHECIDO	: .;
 
 programa
-	:	declaracoes 'algoritmo' corpo 'fim_algoritmo' EOF
+	:	declaracoes 'algoritmo' corpo 'fim_algoritmo'
 	;
 	
 declaracoes
