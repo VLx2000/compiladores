@@ -9,6 +9,8 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.Token;
 
+import br.ufscar.dc.compiladores.LAParser.ProgramaContext;
+
 public class App {
 
     public static void main(String args[]) throws IOException {
@@ -68,7 +70,10 @@ public class App {
                 //parser.removeErrorListeners();
                 parser.addErrorListener(msgs);
 
-                parser.programa();
+                ProgramaContext arvore = parser.programa();
+                LASemantico as = new LASemantico();
+                as.visitPrograma(arvore);
+                LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s));
             }
             
             if (!erroLexico.isEmpty()) {

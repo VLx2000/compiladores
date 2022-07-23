@@ -1,13 +1,5 @@
 grammar LA;
 
-// Palavras chaves
-PALAVRA_CHAVE 			: 'algoritmo' | 'fim_algoritmo' | 'declare' | 'var' | 'tipo' | 'literal' 
-						| 'inteiro' | 'real' | 'logico' | 'e' | 'ou' | 'verdadeiro' | 'falso' | 'constante' 
-						| 'leia' | 'escreva'  | 'nao' | 'se' | 'entao' | 'senao' | 'fim_se' | 'caso' | 'fim_caso' 
-						| 'para' | 'fim_para' | 'enquanto' | 'fim_enquanto' | 'faca' | 'seja' | 'ate' 
-						| 'registro' | 'fim_registro' | 'procedimento' | 'fim_procedimento' | 'retorne' 
-						| 'funcao' | 'fim_funcao' | '<-' | '->';
-
 // Números inteiros e reais
 NUM_INT 				: ('0'..'9')+;
 NUM_REAL				: ('0'..'9')+ ('.' ('0'..'9')+)?;
