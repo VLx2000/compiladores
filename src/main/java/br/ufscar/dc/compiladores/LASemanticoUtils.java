@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.Token;
 
+import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
+import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
+import br.ufscar.dc.compiladores.LAParser.Parcela_unarioContext;
+import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
+
 public class LASemanticoUtils {
     public static List<String> errosSemanticos = new ArrayList<>();
     
@@ -43,26 +48,70 @@ public class LASemanticoUtils {
         return ret;
     }
 
-    public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.FatorAritmeticoContext ctx) {
-        if (ctx.NUMINT() != null) {
-            return TabelaDeSimbolos.TipoLA.INTEIRO;
-        }
-        if (ctx.NUMREAL() != null) {
-            return TabelaDeSimbolos.TipoLA.REAL;
-        }
-        if (ctx.VARIAVEL() != null) {
-            String nomeVar = ctx.VARIAVEL().getText();
-            if (!tabela.existe(nomeVar)) {
-                adicionarErroSemantico(ctx.VARIAVEL().getSymbol(), "Variável " + nomeVar + " não foi declarada antes do uso");
-                return TabelaDeSimbolos.TipoLA.INVALIDO;
+    public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.FatorContext ctx) {
+        TabelaDeSimbolos.TipoLA ret = null;
+        for(var pa:ctx.parcela()){
+            TabelaDeSimbolos.TipoLA aux =  verificarTipo(tabela, pa);
+            if(ret == null){
+                ret = aux;
+            }else if(ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO){
+                adicionarErroSemantico(ctx.start, "Expressão " +ctx.getText()+ " contém tipos incompatíveis");
+                ret = TabelaDeSimbolos.TipoLA.INVALIDO;
             }
-            return verificarTipo(tabela, nomeVar);
         }
         // se não for nenhum dos tipos acima, só pode ser uma expressão
         // entre parêntesis
-        return verificarTipo(tabela, ctx.expressaoAritmetica());
+        return ret;
     }
     
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.ParcelaContext ctx) {
+        if(ctx.op_unario() != null){
+            return verificarTipo(tabela, ctx.parcela_unario());
+        }
+        return verificarTipo(tabela, ctx.parcela_unario());
+        
+    }
+
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, Parcela_unarioContext ctx) {
+        TabelaDeSimbolos.TipoLA ret = null;
+        if(ctx.identificador() != null){
+            ret =  verificarTipo(tabela, ctx.identificador());
+        }else if(ctx.IDENT() != null){
+            for(var exp: ctx.expressao()){
+                TabelaDeSimbolos.TipoLA aux =  verificarTipo(tabela, exp);
+                if(ret == null){
+                    ret = aux;
+                }else if(ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO){
+                    adicionarErroSemantico(ctx.start, "Expressão " +ctx.getText()+ " contém tipos incompatíveis");
+                    ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+                }
+            }
+        }else if(ctx.NUM_INT()!= null){
+            ret =  TabelaDeSimbolos.TipoLA.INTEIRO;
+        }else if(ctx.NUM_REAL()!= null){
+            ret =  TabelaDeSimbolos.TipoLA.REAL;
+        }else{
+            for(var exp: ctx.expressao()){
+                TabelaDeSimbolos.TipoLA aux =  verificarTipo(tabela, exp);
+                if(ret == null){
+                    ret = aux;
+                }else if(ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO){
+                    adicionarErroSemantico(ctx.start, "Expressão " +ctx.getText()+ " contém tipos incompatíveis");
+                    ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+                }
+            }
+        }
+        return ret;
+    }
+
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, ExpressaoContext ctx) {
+        return null;
+    }
+
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, IdentificadorContext ctx) {
+        return null;
+    }
+
     public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
         return tabela.verificar(nomeVar);
     }
