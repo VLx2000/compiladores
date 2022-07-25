@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.Token;
 
+import br.ufscar.dc.compiladores.LAParser.Exp_relacionalContext;
 import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
+import br.ufscar.dc.compiladores.LAParser.Fator_logicoContext;
 import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
+import br.ufscar.dc.compiladores.LAParser.Parcela_logicaContext;
 import br.ufscar.dc.compiladores.LAParser.Parcela_unarioContext;
+import br.ufscar.dc.compiladores.LAParser.Termo_logicoContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
 public class LASemanticoUtils {
@@ -104,12 +108,69 @@ public class LASemanticoUtils {
         return ret;
     }
 
-    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, ExpressaoContext ctx) {
-        return null;
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.ExpressaoContext ctx) {
+        TabelaDeSimbolos.TipoLA ret = null;
+        for(var tl: ctx.termo_logico()){
+            TabelaDeSimbolos.TipoLA aux = verificarTipo(tabela, tl);
+            if(ret == null){
+                ret = aux;
+            }else if(ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO){
+                adicionarErroSemantico(ctx.start, "Expressão " +ctx.getText()+ " contém tipos incompatíveis");
+                ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+            }
+        }
+        return ret;
     }
 
-    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, IdentificadorContext ctx) {
-        return null;
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Termo_logicoContext ctx) {
+        TabelaDeSimbolos.TipoLA ret = null;
+        for(var fl: ctx.fator_logico()){
+            TabelaDeSimbolos.TipoLA aux = verificarTipo(tabela, fl);
+            if(ret == null){
+                ret = aux;
+            }else if(ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO){
+                adicionarErroSemantico(ctx.start, "Expressão " +ctx.getText()+ " contém tipos incompatíveis");
+                ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+            }
+        }
+        return ret;
+    }
+
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Fator_logicoContext ctx) {
+        return verificarTipo(tabela,ctx.parcela_logica());
+    }
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Parcela_logicaContext ctx) {
+        return verificarTipo(tabela, ctx.exp_relacional());
+    }
+
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Exp_relacionalContext ctx) {
+        TabelaDeSimbolos.TipoLA ret = null;
+        for (var ea : ctx.exp_aritmetica()) {
+            TabelaDeSimbolos.TipoLA aux = verificarTipo(tabela, ea);
+            if (ret == null) {
+                ret = aux;
+            } else if (ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO) {
+                adicionarErroSemantico(ctx.start, "Expressão " + ctx.getText() + " contém tipos incompatíveis");
+                ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+            }
+        }
+
+        return ret;
+    }
+
+    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.IdentificadorContext ctx) {
+        TabelaDeSimbolos.TipoLA ret = null;
+        for (var id : ctx.IDENT()) {
+            TabelaDeSimbolos.TipoLA aux = verificarTipo(tabela, id.getText());
+            if (ret == null) {
+                ret = aux;
+            } else if (ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO) {
+                adicionarErroSemantico(ctx.start, "Expressão " + ctx.getText() + " contém tipos incompatíveis");
+                ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+            }
+        }
+
+        return ret;
     }
 
     public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
