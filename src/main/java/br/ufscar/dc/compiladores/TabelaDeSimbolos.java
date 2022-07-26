@@ -8,6 +8,8 @@ public class TabelaDeSimbolos {
         INTEIRO,
         REAL,
         INVALIDO,
+        LITERAL,
+        LOGICO,
         CADEIA
 
     }

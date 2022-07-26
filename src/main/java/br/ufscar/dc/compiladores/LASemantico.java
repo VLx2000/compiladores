@@ -85,12 +85,16 @@ public class LASemantico extends LABaseVisitor<Void> {
         String strTipoVar = ctx.tipo().getText();
         TabelaDeSimbolos.TipoLA tipoVar = TipoLA.INVALIDO;
         switch (strTipoVar) {
-            case "INTEIRO":
+            case "inteiro":
                 tipoVar = TipoLA.INTEIRO;
                 break;
-            case "REAL":
+            case "real":
                 tipoVar = TipoLA.REAL;
                 break;
+            case "literal":
+                tipoVar = TipoLA.LITERAL;
+            case "logico":
+                tipoVar = TipoLA.LOGICO;
             default:
                 // Nunca irá acontecer, pois o analisador sintático
                 // não permite
