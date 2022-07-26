@@ -3,9 +3,6 @@ package br.ufscar.dc.compiladores;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.Context;
-
-import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.antlr.v4.runtime.Token;
 
 import br.ufscar.dc.compiladores.LAParser.Exp_relacionalContext;
@@ -38,23 +35,23 @@ public class LASemanticoUtils {
         return ret;
     }
 
-    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.DeclaracoesContext ctx) {
-        TabelaDeSimbolos.TipoLA ret = null;
-        for (var dlg : ctx.decl_local_global()) {
-            ret = verificarIncompativel(verificarTipo(tabela, dlg), ctx.start, ctx.getText(), ret);
-        }
-        return ret;
-    }
+    // private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.DeclaracoesContext ctx) {
+    //     TabelaDeSimbolos.TipoLA ret = null;
+    //     for (var dlg : ctx.decl_local_global()) {
+    //         ret = verificarIncompativel(verificarTipo(tabela, dlg), ctx.start, ctx.getText(), ret);
+    //     }
+    //     return ret;
+    // }
 
-    private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Decl_local_globalContext ctx) {
-        if(ctx.declaracao_local() != null){
-            return verificarTipo(tabela, ctx.declaracao_local());
-        }
-        else{
-            return verificarTipo(tabela, ctx.declaracao_global());
-        }
-    }
-
+    // private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Decl_local_globalContext ctx) {
+    //     if(ctx.declaracao_local() != null){
+    //         return verificarTipo(tabela, ctx.declaracao_local());
+    //     }
+    //     else{
+    //         return verificarTipo(tabela, ctx.declaracao_global());
+    //     }
+    // }
+/*
     private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Declaracao_localContext ctx) {
         if(ctx.variavel() != null){
             return verificarTipo(tabela, ctx.variavel());
@@ -62,7 +59,7 @@ public class LASemanticoUtils {
         else if(ctx.IDENT() != null){
             //falta terminar ainda
         }
-    }
+    }*/
 
     public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.Exp_aritmeticaContext ctx) {
         TabelaDeSimbolos.TipoLA ret = null;
@@ -132,6 +129,7 @@ public class LASemanticoUtils {
 
     private static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.ExpressaoContext ctx) {
         TabelaDeSimbolos.TipoLA ret = null;
+        
         for(var tl: ctx.termo_logico()){
             ret = verificarIncompativel(verificarTipo(tabela, tl), ctx.start, ctx.getText(), ret);
         }
@@ -172,6 +170,12 @@ public class LASemanticoUtils {
     }
 
     public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
-        return tabela.verificar(nomeVar);
+        
+        if (tabela.existe(nomeVar)) {
+            return tabela.verificar(nomeVar);
+        } else {
+            return TabelaDeSimbolos.TipoLA.INVALIDO;
+        }
+        
     }
 }

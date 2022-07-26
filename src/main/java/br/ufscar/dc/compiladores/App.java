@@ -22,7 +22,19 @@ public class App {
         LALexer lex = new LALexer(cs);
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))) {
+            CommonTokenStream tokens = new CommonTokenStream(lex);
+            LAParser parser = new LAParser(tokens);
 
+            // Registrando o error lister personalizado
+            MensagensCustomizadas msgs = new MensagensCustomizadas(pw, false);
+            //parser.removeErrorListeners();
+            parser.addErrorListener(msgs);
+
+            ProgramaContext arvore = parser.programa();
+            LASemantico as = new LASemantico();
+            as.visitPrograma(arvore);
+            LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s));
+            /*
             Token t = null;
             Integer line;
             String regra, token, erroLexico = "", resultado = "";
@@ -82,7 +94,7 @@ public class App {
                 pw.close(); // Fechando arquivo escrito
             }
         
-            pw.write(resultado);
+            pw.write(resultado);*/
             pw.close(); // Fechando arquivo escrito
             
         } catch (IOException ex) {

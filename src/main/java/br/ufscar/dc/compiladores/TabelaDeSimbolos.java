@@ -9,6 +9,7 @@ public class TabelaDeSimbolos {
         REAL,
         INVALIDO,
         CADEIA
+
     }
     
     class EntradaTabelaDeSimbolos {
