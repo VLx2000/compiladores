@@ -67,6 +67,38 @@ public class LASemantico extends LABaseVisitor<Void> {
 
         if (ctx.variavel() != null) {
             return visitVariavel(ctx.variavel());
+        }if(ctx.IDENT()!=null){
+            TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+            String nomeVar = ctx.IDENT().getText();
+            String strTipoVar = ctx.tipo_basico().getText();
+            
+            TipoLA tipoVar = TipoLA.INVALIDO;
+            switch (strTipoVar) {
+                case "inteiro":
+                    tipoVar = TipoLA.INTEIRO;
+                    break;
+                case "real":
+                    tipoVar = TipoLA.REAL;
+                    break;
+                case "literal":
+                    tipoVar = TipoLA.LITERAL;
+                case "logico":
+                    tipoVar = TipoLA.LOGICO;
+                default:
+                    // Nunca irá acontecer, pois o analisador sintático
+                    // não permite
+                    break;
+            }
+            if (escopoAtual.verificar(nomeVar) != null) {
+                LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), nomeVar
+                        + " declarada duas vezes num mesmo escopo");
+            } else {
+                escopoAtual.adicionar(nomeVar, tipoVar);
+            }
+            
+
+
+
         } /*
            * else if (ctx.tipo_basico() != null && ctx.valor_constante() != null){
            * return
