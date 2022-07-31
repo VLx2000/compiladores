@@ -64,51 +64,76 @@ public class LASemantico extends LABaseVisitor<Void> {
 
     @Override
     public Void visitDeclaracao_local(LAParser.Declaracao_localContext ctx) {
-
         if (ctx.variavel() != null) {
             return visitVariavel(ctx.variavel());
-        }if(ctx.IDENT()!=null){
+        }if(ctx.tipo_basico()!=null){
             TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
             String nomeVar = ctx.IDENT().getText();
-            String strTipoVar = ctx.tipo_basico().getText();
-            
-            TipoLA tipoVar = TipoLA.INVALIDO;
-            switch (strTipoVar) {
-                case "inteiro":
-                    tipoVar = TipoLA.INTEIRO;
-                    break;
-                case "real":
-                    tipoVar = TipoLA.REAL;
-                    break;
-                case "literal":
-                    tipoVar = TipoLA.LITERAL;
-                case "logico":
-                    tipoVar = TipoLA.LOGICO;
-                default:
-                    // Nunca irá acontecer, pois o analisador sintático
-                    // não permite
-                    break;
-            }
+            TipoLA tipoVar = verificaTipoBasico(ctx.tipo_basico());
             if (escopoAtual.verificar(nomeVar) != null) {
                 LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), nomeVar
                         + " declarada duas vezes num mesmo escopo");
             } else {
                 escopoAtual.adicionar(nomeVar, tipoVar);
             }
-            
+        
 
-
-
-        } /*
-           * else if (ctx.tipo_basico() != null && ctx.valor_constante() != null){
-           * return
-           * } else {
-           * return
-           * }
-           */
-
+        } else if (ctx.tipo() != null){
+            visitTipo(ctx.tipo());
+        }
         return null;
     }
+
+    public TipoLA verificaTipoBasico(LAParser.Tipo_basicoContext ctx){
+        String strTipoVar = ctx.getText();
+            
+        TipoLA tipoVar = TipoLA.INVALIDO;
+        switch (strTipoVar) {
+            case "inteiro":
+                tipoVar = TipoLA.INTEIRO;
+                break;
+            case "real":
+                tipoVar = TipoLA.REAL;
+                break;
+            case "literal":
+                tipoVar = TipoLA.LITERAL;
+            case "logico":
+                tipoVar = TipoLA.LOGICO;
+            default:
+                // Nunca irá acontecer, pois o analisador sintático
+                // não permite
+                break;
+        }
+        if(tipoVar == TipoLA.INVALIDO){
+            LASemanticoUtils.adicionarErroSemantico(ctx.getStart(),"tipo "+ strTipoVar
+                        + " nao declarado");
+        }
+        return tipoVar;
+    }
+
+    @Override
+    public Void visitTipo(LAParser.TipoContext ctx){
+        if(ctx.registro()!=null){
+            visitRegistro(ctx.registro());
+        } else if (ctx.tipo_estendido() != null) {
+            visitTipo_estendido(ctx.tipo_estendido());
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitRegistro(LAParser.RegistroContext ctx){
+        for(LAParser.VariavelContext variavel : ctx.variavel()){
+            visitVariavel(variavel);
+        }
+        return null;
+    }
+    
+    @Override
+    public Void visitTipo_estendido(LAParser.Tipo_estendidoContext ctx){
+        return null;
+    }
+
 
     @Override
     public Void visitVariavel(LAParser.VariavelContext ctx) {
