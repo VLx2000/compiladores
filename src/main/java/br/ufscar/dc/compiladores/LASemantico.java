@@ -38,8 +38,8 @@ public class LASemantico extends LABaseVisitor<Void> {
     public Void declaradaDuasVezes(TabelaDeSimbolos escopoAtual, String nomeVar, 
                                     TipoLA tipoVar, Token start) {
         if (escopoAtual.existe(nomeVar)) {
-            LASemanticoUtils.adicionarErroSemantico(start, nomeVar
-                    + " declarada duas vezes num mesmo escopo");
+            LASemanticoUtils.adicionarErroSemantico(start,
+                "identificador " + nomeVar + " ja declarado anteriormente");
         } else {
             escopoAtual.adicionar(nomeVar, tipoVar);
         }
@@ -56,28 +56,14 @@ public class LASemantico extends LABaseVisitor<Void> {
     public Void visitDeclaracao_local(LAParser.Declaracao_localContext ctx) {
         TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
         if (ctx.variavel() != null) {
+            System.out.print("teste");
             for (LAParser.IdentificadorContext id : ctx.variavel().identificador()) {
                 declaradaDuasVezes(escopoAtual, 
                                     id.getText(), 
                                     verificaTipoBasico(ctx.variavel().getText()),
                                     id.getStart());
             }
-            if (ctx.tipo() != null) {
-                declaradaDuasVezes(escopoAtual, 
-                                    ctx.IDENT().getText(), 
-                                    verificaTipoBasico(ctx.tipo_basico().getText()),
-                                    ctx.getStart());
-            }
-            return null;
         }
-
-        if (ctx.tipo() != null || (ctx.valor_constante() != null && ctx.tipo_basico() != null)) {
-            declaradaDuasVezes(escopoAtual, 
-                                    ctx.IDENT().getText(), 
-                                    verificaTipoBasico(ctx.tipo_basico().getText()),
-                                    ctx.getStart());
-        }
-
         return null;
     }
 
@@ -85,11 +71,10 @@ public class LASemantico extends LABaseVisitor<Void> {
     public Void visitTipo_basico_ident(Tipo_basico_identContext ctx) {
         System.out.println("opa");
         if (ctx.IDENT() != null) {
-            for (TabelaDeSimbolos escopoAtual : escoposAninhados.percorrerEscoposAninhados()) {
-                if (!escopoAtual.existe(ctx.IDENT().getText())) {
-                    LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
-                    "tipo " + ctx.IDENT().getText() + " nao declarado");
-                }
+            TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+            if (!escopoAtual.existe(ctx.IDENT().getText())) {
+                LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
+                "tipo " + ctx.IDENT().getText() + " nao declarado");
             }
         }
         return null;
