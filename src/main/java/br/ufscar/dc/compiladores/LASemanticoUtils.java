@@ -5,15 +5,8 @@ import java.util.List;
 
 import org.antlr.v4.runtime.Token;
 
-import br.ufscar.dc.compiladores.LAParser.Exp_relacionalContext;
-import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
-import br.ufscar.dc.compiladores.LAParser.Fator_logicoContext;
-import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
-import br.ufscar.dc.compiladores.LAParser.Parcela_logicaContext;
 import br.ufscar.dc.compiladores.LAParser.Parcela_unarioContext;
-import br.ufscar.dc.compiladores.LAParser.TermoContext;
 import br.ufscar.dc.compiladores.LAParser.Parcela_nao_unarioContext;
-import br.ufscar.dc.compiladores.LAParser.Termo_logicoContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
 public class LASemanticoUtils {
@@ -21,8 +14,7 @@ public class LASemanticoUtils {
     
     public static void adicionarErroSemantico(Token t, String mensagem) {
         int linha = t.getLine();
-        int coluna = t.getCharPositionInLine();
-        errosSemanticos.add(String.format("Erro %d:%d - %s", linha, coluna, mensagem));
+        errosSemanticos.add(String.format("Linha %d: %s", linha, mensagem));
     }
 
     public static TipoLA verificarIncompativel(TabelaDeSimbolos.TipoLA aux, Token start, String text, TabelaDeSimbolos.TipoLA ret) {
