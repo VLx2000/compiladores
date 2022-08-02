@@ -2,6 +2,7 @@ package br.ufscar.dc.compiladores;
 
 import org.antlr.v4.runtime.Token;
 
+import br.ufscar.dc.compiladores.LAParser.CmdAtribuicaoContext;
 import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
 import br.ufscar.dc.compiladores.LAParser.Tipo_basico_identContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
@@ -35,11 +36,11 @@ public class LASemantico extends LABaseVisitor<Void> {
         return tipoVar;
     }
 
-    public Void declaradaDuasVezes(TabelaDeSimbolos escopoAtual, String nomeVar, 
-                                    TipoLA tipoVar, Token start) {
+    public Void declaradaDuasVezes(TabelaDeSimbolos escopoAtual, String nomeVar,
+            TipoLA tipoVar, Token start) {
         if (escopoAtual.existe(nomeVar)) {
             LASemanticoUtils.adicionarErroSemantico(start,
-                "identificador " + nomeVar + " ja declarado anteriormente");
+                    "identificador " + nomeVar + " ja declarado anteriormente");
         } else {
             escopoAtual.adicionar(nomeVar, tipoVar);
         }
@@ -56,12 +57,12 @@ public class LASemantico extends LABaseVisitor<Void> {
     public Void visitDeclaracao_local(LAParser.Declaracao_localContext ctx) {
         TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
         if (ctx.variavel() != null) {
-            System.out.print("teste");
+            //System.out.print("teste");
             for (LAParser.IdentificadorContext id : ctx.variavel().identificador()) {
-                declaradaDuasVezes(escopoAtual, 
-                                    id.getText(), 
-                                    verificaTipoBasico(ctx.variavel().getText()),
-                                    id.getStart());
+                declaradaDuasVezes(escopoAtual,
+                        id.getText(),
+                        verificaTipoBasico(ctx.variavel().getText()),
+                        id.getStart());
             }
         }
         return null;
@@ -73,8 +74,8 @@ public class LASemantico extends LABaseVisitor<Void> {
         if (ctx.IDENT() != null) {
             TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
             if (!escopoAtual.existe(ctx.IDENT().getText())) {
-                LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
-                "tipo " + ctx.IDENT().getText() + " nao declarado");
+                LASemanticoUtils.adicionarErroSemantico(ctx.getStart(),
+                        "tipo " + ctx.IDENT().getText() + " nao declarado");
             }
         }
         return null;
@@ -85,10 +86,26 @@ public class LASemantico extends LABaseVisitor<Void> {
         // System.out.println("aqui");
         for (TabelaDeSimbolos escopoAtual : escoposAninhados.percorrerEscoposAninhados()) {
             if (!escopoAtual.existe(ctx.IDENT().get(0).getText())) {// n sei pq aqui tem q ser get 0
-                LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-                "identificador " + ctx.IDENT().get(0).getText() + " nao declarado");
+                LASemanticoUtils.adicionarErroSemantico(ctx.start,
+                        "identificador " + ctx.IDENT().get(0).getText() + " nao declarado");
             }
         }
         return null;
     }
+
+    /* @Override
+    public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx) {
+        String nomeVar = ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0).termo(0).fator(0).parcela(0).parcela_unario().identificador().getText();
+        TipoLA tipoExpressao = verificaTipoBasico(nomeVar);
+        System.out.println(tipoExpressao);
+        if (tabela.existe(nomeVar)) {
+            TipoLA tipoVariavel = verificaTipoBasico(nomeVar);
+            System.out.println(tipoVariavel);
+            if (tipoVariavel != tipoExpressao){
+            LASemanticoUtils.adicionarErroSemantico(ctx.start,
+                        "atribuicao nao compativel para " + ctx.identificador().getText());
+            }
+        }
+        return null;
+    } */
 }

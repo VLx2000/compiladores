@@ -1,2 +1,1 @@
-Linha 11: identificador idades nao declarado
 Fim da compilacao
