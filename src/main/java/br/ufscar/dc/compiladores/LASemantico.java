@@ -12,11 +12,9 @@ public class LASemantico extends LABaseVisitor<Void> {
     Escopos escoposAninhados = new Escopos();
     TabelaDeSimbolos tabela;
 
-    public TipoLA verificaTipoBasico(LAParser.Tipo_basicoContext ctx) {
+    public TipoLA verificaTipoBasico(String strTipoVar) {
 
         System.out.println("TIPO BASICO\n");
-        String strTipoVar = ctx.getText();
-        System.out.println("opa2" + strTipoVar);
 
         TipoLA tipoVar = TipoLA.INVALIDO;
         switch (strTipoVar) {
@@ -92,16 +90,21 @@ public class LASemantico extends LABaseVisitor<Void> {
     @Override
     public Void visitVariavel(LAParser.VariavelContext ctx){
         System.out.println("VARIAVEL\n");
+        TipoLA tipoVar = verificaTipoBasico(ctx.tipo().getText());
+
         visitTipo(ctx.tipo());
-        // for(LAParser.IdentificadorContext id : ctx.identificador()){
-        //     visitIdentificador(id);
-        // }
+
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+    
+        for(LAParser.IdentificadorContext id : ctx.identificador()){
+            
+            VerificaDeclaradaDuasVezes(escopoAtual, id.IDENT(0).getText(), tipoVar, ctx.getStart());
+        }
         return null;
     }
 
     @Override
     public Void visitTipo(LAParser.TipoContext ctx){
-        System.out.println("TIPO\n");
         if(ctx.registro() != null){
             visitRegistro(ctx.registro());
         }else if(ctx.tipo_estendido() != null){
@@ -122,17 +125,17 @@ public class LASemantico extends LABaseVisitor<Void> {
         System.out.println("Tipo BASICO IDENT\n");
         TipoLA tipoVar = TipoLA.INVALIDO;
         if(ctx.tipo_basico() != null){
-            tipoVar = verificaTipoBasico(ctx.tipo_basico());
+            tipoVar = verificaTipoBasico(ctx.tipo_basico().getText());
         }else{
             LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
             "tipo " + ctx.getText() + " nao declarado");
             System.out.println("tipo " + ctx.getText() + " nao declarado");
         }
-        if (ctx.IDENT() != null) {
-            System.out.println("IDENT\n");
-            TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
-           // VerificaDeclaradaDuasVezes(escopoAtual, ctx.IDENT().get(0).getText(), tipoVar, ctx.getStart());
-        }
+        // if (ctx.IDENT() != null) {
+        //     System.out.println("IDENT\n");
+        //     TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        //     VerificaDeclaradaDuasVezes(escopoAtual, ctx.IDENT().getSymbol().getText(), tipoVar, ctx.getStart());
+        // }
         return null;
     }
 
