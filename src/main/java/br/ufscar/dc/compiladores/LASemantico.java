@@ -98,7 +98,7 @@ public class LASemantico extends LABaseVisitor<Void> {
     
         for(LAParser.IdentificadorContext id : ctx.identificador()){
             
-            VerificaDeclaradaDuasVezes(escopoAtual, id.IDENT(0).getText(), tipoVar, ctx.getStart());
+            VerificaDeclaradaDuasVezes(escopoAtual, id.IDENT(0).getText(), tipoVar, id.getStart());
         }
         return null;
     }
