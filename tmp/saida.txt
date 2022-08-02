@@ -1,8 +1,6 @@
-Linha 5: identificador nome ja declarado anteriormente
 Linha 7: tipo inteir nao declarado
-Linha 7: identificador idade ja declarado anteriormente
-Linha 10: identificador nome ja declarado anteriormente
-Linha 11: identificador idades ja declarado anteriormente
-Linha 14: identificador nome ja declarado anteriormente
-Linha 14: identificador idade ja declarado anteriormente
+Linha 10: identificador nome nao declarado
+Linha 11: identificador idades nao declarado
+Linha 14: identificador nome nao declarado
+Linha 14: identificador idade nao declarado
 Fim da compilacao

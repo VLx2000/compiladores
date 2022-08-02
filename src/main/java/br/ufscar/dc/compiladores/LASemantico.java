@@ -12,7 +12,7 @@ public class LASemantico extends LABaseVisitor<Void> {
     Escopos escoposAninhados = new Escopos();
     TabelaDeSimbolos tabela;
 
-    public Void visitTipo_basico(LAParser.Tipo_basicoContext ctx) {
+    public TipoLA verificaTipoBasico(LAParser.Tipo_basicoContext ctx) {
 
         System.out.println("TIPO BASICO\n");
         String strTipoVar = ctx.getText();
@@ -37,16 +37,13 @@ public class LASemantico extends LABaseVisitor<Void> {
                 // não permite
                 break;
         }
-        if(tipoVar == TipoLA.INVALIDO){
-            LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
-            "tipo " + strTipoVar + " nao declarado");
-            System.out.println("tipo " + strTipoVar + " nao declarado");
-        }
-        return null;
+
+        return tipoVar;
     }
 
-    public Void declaradaDuasVezes(TabelaDeSimbolos escopoAtual, String nomeVar, 
+    public Void VerificaDeclaradaDuasVezes(TabelaDeSimbolos escopoAtual, String nomeVar, 
                                     TipoLA tipoVar, Token start) {
+        System.out.println("DUAS VEZES " + nomeVar+"\n");
         if (escopoAtual.existe(nomeVar)) {
             LASemanticoUtils.adicionarErroSemantico(start,
                 "identificador " + nomeVar + " ja declarado anteriormente");
@@ -96,9 +93,9 @@ public class LASemantico extends LABaseVisitor<Void> {
     public Void visitVariavel(LAParser.VariavelContext ctx){
         System.out.println("VARIAVEL\n");
         visitTipo(ctx.tipo());
-        for(LAParser.IdentificadorContext id : ctx.identificador()){
-            visitIdentificador(id);
-        }
+        // for(LAParser.IdentificadorContext id : ctx.identificador()){
+        //     visitIdentificador(id);
+        // }
         return null;
     }
 
@@ -123,21 +120,19 @@ public class LASemantico extends LABaseVisitor<Void> {
     @Override
     public Void visitTipo_basico_ident(Tipo_basico_identContext ctx) {
         System.out.println("Tipo BASICO IDENT\n");
+        TipoLA tipoVar = TipoLA.INVALIDO;
         if(ctx.tipo_basico() != null){
-            visitTipo_basico(ctx.tipo_basico());
+            tipoVar = verificaTipoBasico(ctx.tipo_basico());
         }else{
             LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
             "tipo " + ctx.getText() + " nao declarado");
             System.out.println("tipo " + ctx.getText() + " nao declarado");
         }
-        // if (ctx.IDENT() != null) {
-        //     System.out.println("IDENT\n");
-        //     TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
-        //     if (!escopoAtual.existe(ctx.IDENT().getText())) {
-        //         LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
-        //         "tipo " + ctx.IDENT().getText() + " nao declarado");
-        //     }
-        // }
+        if (ctx.IDENT() != null) {
+            System.out.println("IDENT\n");
+            TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+           // VerificaDeclaradaDuasVezes(escopoAtual, ctx.IDENT().get(0).getText(), tipoVar, ctx.getStart());
+        }
         return null;
     }
 
@@ -147,7 +142,7 @@ public class LASemantico extends LABaseVisitor<Void> {
         for (TabelaDeSimbolos escopoAtual : escoposAninhados.percorrerEscoposAninhados()) {
             if (!escopoAtual.existe(ctx.IDENT().get(0).getText())) {// n sei pq aqui tem q ser get 0
                 LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-                "identificador " + ctx.IDENT().get(0).getText() + " ja declarado anteriormente");
+                "identificador " + ctx.IDENT().get(0).getText() + " nao declarado");
             }
         }
         return null;
