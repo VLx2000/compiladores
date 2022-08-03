@@ -7,8 +7,8 @@ import java.io.PrintWriter;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.Token;
-
+/* import org.antlr.v4.runtime.Token;
+ */
 import br.ufscar.dc.compiladores.LAParser.ProgramaContext;
 
 public class App {
@@ -26,14 +26,15 @@ public class App {
             LAParser parser = new LAParser(tokens);
 
             // Registrando o error lister personalizado
-            MensagensCustomizadas msgs = new MensagensCustomizadas(pw, false);
+            //MensagensCustomizadas msgs = new MensagensCustomizadas(pw, false);
             //parser.removeErrorListeners();
-            parser.addErrorListener(msgs);
-
+            //parser.addErrorListener(msgs);
+            //System.out.println("aqui");
             ProgramaContext arvore = parser.programa();
             LASemantico as = new LASemantico();
             as.visitPrograma(arvore);
-            LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s));
+            LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s + "\n"));
+            pw.write("Fim da compilacao\n");
             /*
             Token t = null;
             Integer line;
