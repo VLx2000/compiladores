@@ -20,8 +20,8 @@ public class LASemanticoUtils {
     public static TipoLA verificarIncompativel(TabelaDeSimbolos.TipoLA aux, Token start, String text, TabelaDeSimbolos.TipoLA ret) {
         if (ret == null) {
             ret = aux;
-        } else if (ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO) {
-            System.out.println("INVALIDO\n");
+        } else if (ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO && !((ret == TipoLA.INTEIRO && aux ==TipoLA.REAL)||ret == TipoLA.REAL && aux ==TipoLA.INTEIRO ) ) {
+            System.out.println(ret+" " + aux+ " INVALIDO\n");
             //adicionarErroSemantico(start, "Expressão " + text + " contém tipos incompatíveis");
             ret = TabelaDeSimbolos.TipoLA.INVALIDO;
         }
@@ -97,18 +97,24 @@ public class LASemanticoUtils {
 
     private static TipoLA verificarTipo(TabelaDeSimbolos tabela, Parcela_unarioContext ctx) {
         System.out.println("VERIFICA Unario\n");
+
         TabelaDeSimbolos.TipoLA ret = null;
         if(ctx.identificador() != null){
+            System.out.println("AQUI1\n");
             ret =  verificarTipo(tabela, ctx.identificador());
         }else if(ctx.IDENT() != null){
+            System.out.println("AQUI2\n");
             for(var exp: ctx.expressao()){
                 ret = verificarIncompativel(verificarTipo(tabela, exp), ctx.start, ctx.getText(), ret);
             }
         }else if(ctx.NUM_INT()!= null){
+            System.out.println("AQUI3\n");
             ret =  TabelaDeSimbolos.TipoLA.INTEIRO;
         }else if(ctx.NUM_REAL()!= null){
+            System.out.println("AQUI4\n");
             ret =  TabelaDeSimbolos.TipoLA.REAL;
         }else{
+            System.out.println("AQUI5\n");
             for(var exp: ctx.expressao()){
                 ret = verificarIncompativel(verificarTipo(tabela, exp), ctx.start, ctx.getText(), ret);
             }
@@ -183,7 +189,7 @@ public class LASemanticoUtils {
     }
 
     public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
-        
+        System.out.println("TIPO\n");
         if (tabela.existe(nomeVar)) {
             return tabela.verificar(nomeVar);
         } else {

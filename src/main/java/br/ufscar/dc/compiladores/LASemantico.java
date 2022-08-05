@@ -150,11 +150,19 @@ public class LASemantico extends LABaseVisitor<Void> {
     @Override
     public Void visitIdentificador(IdentificadorContext ctx) {
         System.out.println("IDENTFICADOR\n");
+        TabelaDeSimbolos escopo = escoposAninhados.obterEscopoAtual();
+        //System.out.println(escopo.existe("sobrenome"));
         for (TabelaDeSimbolos escopoAtual : escoposAninhados.percorrerEscoposAninhados()) {
-            if (!escopoAtual.existe(ctx.IDENT().get(0).getText())) {// n sei pq aqui tem q ser get 0
-                LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-                "identificador " + ctx.IDENT().get(0).getText() + " nao declarado");
+            
+            for(var ident: ctx.IDENT()){
+                if (!escopoAtual.existe(ident.getText())) {// n sei pq aqui tem q ser get 0
+                
+
+                    LASemanticoUtils.adicionarErroSemantico(ctx.start, 
+                    "identificador " + ident.getText() + " nao declarado");
+                }
             }
+
         }
         return null;
     }
@@ -223,15 +231,15 @@ public class LASemantico extends LABaseVisitor<Void> {
     @Override
     public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx){
         System.out.println("ATRIBUICAO\n");
-        TabelaDeSimbolos tela = escoposAninhados.obterEscopoAtual();
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
 
-        //TipoLA tipoid = LASemanticoUtils.verificarTipo(tabela, ctx.identificador());
+        TipoLA tipoid = LASemanticoUtils.verificarTipo(tabela, ctx.identificador());
         System.out.println("-----------------------");
+
         TipoLA tipoexp = LASemanticoUtils.verificarTipo(tabela, ctx.expressao());
-        if(tipoexp == TipoLA.INVALIDO){
-            System.out.println("AQUi\n");
+        if(tipoexp != tipoid || tipoexp == TipoLA.INVALIDO){
             LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-            "atribuicao nao compatível para " + ctx.identificador().getText());
+            "atribuicao nao compativel para " + ctx.identificador().getText());
         }
         System.out.println("-----------------------");
         return null;
