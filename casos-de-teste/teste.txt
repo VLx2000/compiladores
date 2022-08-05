@@ -1,16 +1,18 @@
-{ leitura de nome e idade com escrita de mensagem usando estes dados }
+{ dados, separadamente, prenome e sobrenome, escrevê-los em dois formatos: "Fulano Tal" e "Tal, F." }
 
 algoritmo
-	declare
-		nome: literal
-	declare
-		idade: inteir
+	declare prenome, sobrenome,
+		formato1, formato2: literal
 
-	{ leitura de nome e idade do teclado }
-	leia(nome)
-	leia(idades)
+	{ obtenção dos nomes }
+	leia(prenome, sobrenome)
 
-	{ saída da mensagem na tela }
-	escreva(nome, " tem ", idade, " anos.")
+	{ composição dos nomes }
+	formato1 <- prenome + " " + sobrenome
+	formato2 <- sobrenome + ", " + 1
+
+	{ resultados }
+	escreva(formato1)
+	escreva(formato2)
 
 fim_algoritmo

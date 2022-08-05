@@ -3,6 +3,13 @@ package br.ufscar.dc.compiladores;
 import org.antlr.v4.runtime.Token;
 import org.stringtemplate.v4.STGroupDir;
 
+import br.ufscar.dc.compiladores.LAParser.CmdAtribuicaoContext;
+import br.ufscar.dc.compiladores.LAParser.CmdContext;
+import br.ufscar.dc.compiladores.LAParser.CmdEscrevaContext;
+import br.ufscar.dc.compiladores.LAParser.CmdLeiaContext;
+import br.ufscar.dc.compiladores.LAParser.CorpoContext;
+import br.ufscar.dc.compiladores.LAParser.Declaracao_localContext;
+import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
 import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
 import br.ufscar.dc.compiladores.LAParser.Tipo_basico_identContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
@@ -41,10 +48,10 @@ public class LASemantico extends LABaseVisitor<Void> {
 
     public Void VerificaDeclaradaDuasVezes(TabelaDeSimbolos escopoAtual, String nomeVar, 
                                     TipoLA tipoVar, Token start) {
-        System.out.println("DUAS VEZES " + nomeVar+"\n");
         if (escopoAtual.existe(nomeVar)) {
             LASemanticoUtils.adicionarErroSemantico(start,
                 "identificador " + nomeVar + " ja declarado anteriormente");
+                System.out.println("DUAS VEZES " + nomeVar+"\n");
         } else {
             escopoAtual.adicionar(nomeVar, tipoVar);
         }
@@ -59,6 +66,7 @@ public class LASemantico extends LABaseVisitor<Void> {
 
     @Override
     public Void visitDeclaracoes(LAParser.DeclaracoesContext ctx){
+        System.out.println("Declaracoes");
         for(LAParser.Decl_local_globalContext dec : ctx.decl_local_global()){
             visitDecl_local_global(dec);
         }
@@ -148,6 +156,84 @@ public class LASemantico extends LABaseVisitor<Void> {
                 "identificador " + ctx.IDENT().get(0).getText() + " nao declarado");
             }
         }
+        return null;
+    }
+
+    @Override
+    public Void visitCorpo(LAParser.CorpoContext ctx){
+        System.out.println("CORPO\n");
+        for(Declaracao_localContext dl: ctx.declaracao_local()){
+            visitDeclaracao_local(dl);
+        }
+
+        for(CmdContext cmd : ctx.cmd()){
+            visitCmd(cmd);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitCmd(CmdContext ctx){
+        if(ctx.cmdLeia()!= null){
+            visitCmdLeia(ctx.cmdLeia());
+        }
+        if(ctx.cmdEscreva()!= null){
+            visitCmdEscreva(ctx.cmdEscreva());
+        }
+        if(ctx.cmdSe()!= null){
+            visitCmdSe(ctx.cmdSe());
+        }
+        if(ctx.cmdCaso()!= null){
+            visitCmdCaso(ctx.cmdCaso());
+        }
+        if(ctx.cmdPara()!= null){
+            visitCmdPara(ctx.cmdPara());
+        }
+        if(ctx.cmdEnquanto()!= null){
+            visitCmdEnquanto(ctx.cmdEnquanto());
+        }
+        if(ctx.cmdFaca()!= null){
+            visitCmdFaca(ctx.cmdFaca());
+        }
+        if(ctx.cmdAtribuicao()!= null){
+            visitCmdAtribuicao(ctx.cmdAtribuicao());
+        }
+        if(ctx.cmdChamada()!= null){
+            visitCmdRetorne(ctx.cmdRetorne());
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitCmdLeia(CmdLeiaContext ctx){
+        System.out.println("LEIA\n");
+        for(IdentificadorContext id:ctx.identificador()){
+            visitIdentificador(id);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitCmdEscreva(CmdEscrevaContext ctx){
+        for(ExpressaoContext exp : ctx.expressao()){
+            visitExpressao(exp);
+        }
+        return null;
+    }
+    @Override
+    public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx){
+        System.out.println("ATRIBUICAO\n");
+        TabelaDeSimbolos tela = escoposAninhados.obterEscopoAtual();
+
+        //TipoLA tipoid = LASemanticoUtils.verificarTipo(tabela, ctx.identificador());
+        System.out.println("-----------------------");
+        TipoLA tipoexp = LASemanticoUtils.verificarTipo(tabela, ctx.expressao());
+        if(tipoexp == TipoLA.INVALIDO){
+            System.out.println("AQUi\n");
+            LASemanticoUtils.adicionarErroSemantico(ctx.start, 
+            "atribuicao nao compatível para " + ctx.identificador().getText());
+        }
+        System.out.println("-----------------------");
         return null;
     }
 }
