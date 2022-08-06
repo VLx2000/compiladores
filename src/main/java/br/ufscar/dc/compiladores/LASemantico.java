@@ -220,7 +220,7 @@ public class LASemantico extends LABaseVisitor<Void> {
         if(tipoexp != TipoLA.INVALIDO){
             if (!tabela.existe(ctx.identificador().getText())) {
                 LASemanticoUtils.adicionarErroSemantico(ctx.start, "identificador " + ctx.identificador().getText() + " nao declarado");
-            } else if (tipoexp != tipoid && !(((tipoid == TipoLA.REAL) || (tipoid == TipoLA.INTEIRO)) & ((tipoid == TipoLA.INTEIRO) || (tipoid == TipoLA.REAL))) ) {
+            } else if (tipoexp != tipoid && !((tipoid == TipoLA.REAL && tipoexp ==TipoLA.INTEIRO)||  (tipoid == TipoLA.INTEIRO && tipoexp ==TipoLA.REAL))) {
                 LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
             }
         } else {

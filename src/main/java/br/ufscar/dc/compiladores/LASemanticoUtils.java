@@ -21,8 +21,6 @@ public class LASemanticoUtils {
         if (ret == null) {
             ret = aux;
         } else if (ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO && !((ret == TipoLA.INTEIRO && aux ==TipoLA.REAL)||ret == TipoLA.REAL && aux ==TipoLA.INTEIRO ) ) {
-            //System.out.println(ret+" " + aux+ " INVALIDO\n");
-            //adicionarErroSemantico(start, "Expressão " + text + " contém tipos incompatíveis");
             ret = TabelaDeSimbolos.TipoLA.INVALIDO;
         }
         return ret;
