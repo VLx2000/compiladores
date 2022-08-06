@@ -26,13 +26,25 @@ public class LASemantico extends LABaseVisitor<Void> {
             case "inteiro":
                 tipoVar = TipoLA.INTEIRO;
                 break;
+            case "^inteiro":
+                tipoVar = TipoLA.INTEIRO;
+                break;
             case "real":
+                tipoVar = TipoLA.REAL;
+                break;
+            case "^real":
                 tipoVar = TipoLA.REAL;
                 break;
             case "literal":
                 tipoVar = TipoLA.LITERAL;
                 break;
+            case "^literal":
+                tipoVar = TipoLA.LITERAL;
+                break;
             case "logico":
+                tipoVar = TipoLA.LOGICO;
+                break;
+            case "^logico":
                 tipoVar = TipoLA.LOGICO;
                 break;
             default:
@@ -96,8 +108,10 @@ public class LASemantico extends LABaseVisitor<Void> {
         TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
     
         for(LAParser.IdentificadorContext id : ctx.identificador()){
-            
-            VerificaDeclaradaDuasVezes(escopoAtual, id.IDENT(0).getText(), tipoVar, id.getStart());
+            for(var ident: id.IDENT()){
+                VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), tipoVar, id.getStart());
+            }
+
         }
         return null;
     }
@@ -221,7 +235,12 @@ public class LASemantico extends LABaseVisitor<Void> {
             if (!tabela.existe(ctx.identificador().getText())) {
                 LASemanticoUtils.adicionarErroSemantico(ctx.start, "identificador " + ctx.identificador().getText() + " nao declarado");
             } else if (tipoexp != tipoid && !((tipoid == TipoLA.REAL && tipoexp ==TipoLA.INTEIRO)||  (tipoid == TipoLA.INTEIRO && tipoexp ==TipoLA.REAL))) {
-                LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
+                if(ctx.getText().charAt(0) =='^'){
+                    LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para ^" + ctx.identificador().getText());
+                }else{
+                    LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
+                }
+
             }
         } else {
             LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
