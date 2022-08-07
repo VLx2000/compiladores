@@ -10,12 +10,14 @@ import br.ufscar.dc.compiladores.LAParser.Declaracao_localContext;
 import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
 import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
 import br.ufscar.dc.compiladores.LAParser.Tipo_basico_identContext;
+import br.ufscar.dc.compiladores.LAParser.VariavelContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
 public class LASemantico extends LABaseVisitor<Void> {
 
     Escopos escoposAninhados = new Escopos();
     TabelaDeSimbolos tabela;
+
 
     public TipoLA verificaTipoBasico(String strTipoVar) {
 
@@ -47,6 +49,8 @@ public class LASemantico extends LABaseVisitor<Void> {
             case "^logico":
                 tipoVar = TipoLA.LOGICO;
                 break;
+            case "registro":
+                tipoVar = TipoLA.REGISTRO;
             default:
                 // Nunca irá acontecer, pois o analisador sintático
                 // não permite
@@ -98,17 +102,44 @@ public class LASemantico extends LABaseVisitor<Void> {
         return null;
     }
 
+
     @Override
     public Void visitVariavel(LAParser.VariavelContext ctx){
         //System.out.println("VARIAVEL\n");
-        TipoLA tipoVar = verificaTipoBasico(ctx.tipo().getText());
-
-        visitTipo(ctx.tipo());
-
+        TipoLA tipoVar = null;
+        System.out.println(ctx.getText());
         TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+
+        if(ctx.tipo().registro()!=null){
+            tipoVar = TipoLA.REGISTRO;
+            
+            for(LAParser.IdentificadorContext id : ctx.identificador()){
+                for(var ident: id.IDENT()){
+                    for(VariavelContext vari : ctx.tipo().registro().variavel()){
+                        TipoLA tipoSubVar = verificaTipoBasico(vari.tipo().getText());
+                        for(IdentificadorContext id2 : vari.identificador()){
+                            for(var ident2: id2.IDENT()){
+                                String nomevar = ident.getText() +"."+ident2.getText();
+                                VerificaDeclaradaDuasVezes(escopoAtual, nomevar, tipoSubVar, id2.getStart());
+                            }
+                        }
+                    }
+                    //VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), tipoVar, id.getStart());
+                }
+            }
+
+        }else{
+            tipoVar = verificaTipoBasico(ctx.tipo().getText());
+        }
+
+            
+        visitTipo(ctx.tipo());
+        
+
     
         for(LAParser.IdentificadorContext id : ctx.identificador()){
             for(var ident: id.IDENT()){
+                System.out.println(ident.getText() + "," + tipoVar);
                 VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), tipoVar, id.getStart());
             }
 
@@ -122,6 +153,16 @@ public class LASemantico extends LABaseVisitor<Void> {
             visitRegistro(ctx.registro());
         }else if(ctx.tipo_estendido() != null){
             visitTipo_estendido(ctx.tipo_estendido());
+        }
+        return null;
+    }
+    @Override 
+    public Void visitRegistro(LAParser.RegistroContext ctx){
+        System.out.println("VISITREGISTRO\n");
+        System.out.println(ctx.getText());
+        for (VariavelContext var : ctx.variavel()){
+        
+            visitVariavel(var);
         }
         return null;
     }
@@ -224,11 +265,11 @@ public class LASemantico extends LABaseVisitor<Void> {
     }
     @Override
     public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx){
-        System.out.println("\n\nATRIBUICAO" + ctx.start);
+        //System.out.println("\n\nATRIBUICAO" + ctx.start);
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
 
         TipoLA tipoid = LASemanticoUtils.verificarTipo(tabela, ctx.identificador());
-        System.out.println(tipoid);
+        //System.out.println(tipoid);
 
         TipoLA tipoexp = LASemanticoUtils.verificarTipo(tabela, ctx.expressao());
         if(tipoexp != TipoLA.INVALIDO){
@@ -245,7 +286,7 @@ public class LASemantico extends LABaseVisitor<Void> {
         } else {
             LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
         }
-        System.out.println(tipoexp);
+        //System.out.println(tipoexp);
         return null;
     }
 }

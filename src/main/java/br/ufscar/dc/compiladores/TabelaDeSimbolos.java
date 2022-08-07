@@ -10,7 +10,7 @@ public class TabelaDeSimbolos {
         INVALIDO,
         LITERAL,
         LOGICO,
-        CADEIA
+        REGISTRO
 
     }
     

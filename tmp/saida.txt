@@ -1,2 +1,14 @@
-Linha 7: identificador lado1 ja declarado anteriormente
+Linha 9: atribuicao nao compativel para ponto1.x
+Linha 12: identificador ponto1 nao declarado
+Linha 12: identificador x nao declarado
+Linha 12: identificador ponto1 nao declarado
+Linha 12: identificador y nao declarado
+Linha 12: identificador ponto1 nao declarado
+Linha 12: identificador z nao declarado
+Linha 13: identificador ponto2 nao declarado
+Linha 13: identificador x nao declarado
+Linha 13: identificador ponto2 nao declarado
+Linha 13: identificador y nao declarado
+Linha 13: identificador ponto2 nao declarado
+Linha 13: identificador z nao declarado
 Fim da compilacao
