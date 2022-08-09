@@ -66,7 +66,7 @@ public class LASemantico extends LABaseVisitor<Void> {
                 //System.out.println("DUAS VEZES " + nomeVar+"\n");
         } else {
             if(tipoVar == TipoLA.REGISTRO){
-                escopoAtual.adicionar_registro(nomeVar,tipoVar,new TabelaDeSimbolos())
+                escopoAtual.adicionar_registro(nomeVar,tipoVar,escoposAninhados.obterEscopoAtual());
             }
             escopoAtual.adicionar(nomeVar, tipoVar);
         }
@@ -111,28 +111,39 @@ public class LASemantico extends LABaseVisitor<Void> {
         if(ctx.tipo().registro() != null){
             for(LAParser.IdentificadorContext id : ctx.identificador()){
                 for(var ident: id.IDENT()){
-                    System.out.println(ident.getText());
+                    escoposAninhados.criarNovoEscopo();
                     VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), TipoLA.REGISTRO, id.getStart());
+                    visitTipo(ctx.tipo());
+                    escoposAninhados.abandonarEscopo();
+                    if( escopoAtual.getTabelaRegistro("ponto1")!= null){
+                        System.out.println("TEste aqui");
+                    }else{
+                        System.out.println("Voltando nulo");
+                    }
+
                 }
     
             }
 
-        }
-
-        TipoLA tipoVar = verificaTipoBasico(ctx.tipo().getText());
+        }else{
+            TipoLA tipoVar = verificaTipoBasico(ctx.tipo().getText());
         
 
-        visitTipo(ctx.tipo());
-
-        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
-        
-        for(LAParser.IdentificadorContext id : ctx.identificador()){
-            for(var ident: id.IDENT()){
-                System.out.println(ident.getText());
-                VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), tipoVar, id.getStart());
+            visitTipo(ctx.tipo());
+    
+            //TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+            
+            for(LAParser.IdentificadorContext id : ctx.identificador()){
+                for(var ident: id.IDENT()){
+                    VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), tipoVar, id.getStart());
+                }
+    
             }
+            System.out.println(escopoAtual.verificar("x"));
 
         }
+
+
         return null;
     }
 

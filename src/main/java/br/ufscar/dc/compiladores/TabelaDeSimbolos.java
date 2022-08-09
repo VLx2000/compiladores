@@ -52,4 +52,8 @@ public class TabelaDeSimbolos {
     public TipoLA verificar(String nome) {
         return tabela.get(nome).tipo;
     }
+
+    public TabelaDeSimbolos getTabelaRegistro(String nome){
+        return tabela.get(nome).tipo_registro;
+    }
 }
