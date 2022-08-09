@@ -24,11 +24,6 @@ public class TabelaDeSimbolos {
             this.tipo = tipo;
             this.tipo_registro  = null;
         }
-        private EntradaTabelaDeSimbolos(String nome, TipoLA tipo,TabelaDeSimbolos tabela_registro){
-            this.nome = nome;
-            this.tipo = tipo;
-            this.tipo_registro = tabela_registro;
-        }
     }
     
     private final Map<String, EntradaTabelaDeSimbolos> tabela;
@@ -41,9 +36,6 @@ public class TabelaDeSimbolos {
         tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo));
     }
     
-    public void adicionar_registro(String nome, TipoLA tipo, TabelaDeSimbolos tabela_registro){
-        tabela.put(nome,new EntradaTabelaDeSimbolos(nome, tipo,tabela_registro));
-    }
 
     public boolean existe(String nome) {
         return tabela.containsKey(nome);
@@ -51,6 +43,9 @@ public class TabelaDeSimbolos {
     
     public TipoLA verificar(String nome) {
         return tabela.get(nome).tipo;
+    }
+    public EntradaTabelaDeSimbolos getVariavel(String nome){
+        return tabela.get(nome);
     }
 
     public TabelaDeSimbolos getTabelaRegistro(String nome){

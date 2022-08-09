@@ -65,9 +65,6 @@ public class LASemantico extends LABaseVisitor<Void> {
                 "identificador " + nomeVar + " ja declarado anteriormente");
                 //System.out.println("DUAS VEZES " + nomeVar+"\n");
         } else {
-            if(tipoVar == TipoLA.REGISTRO){
-                escopoAtual.adicionar_registro(nomeVar,tipoVar,escoposAninhados.obterEscopoAtual());
-            }
             escopoAtual.adicionar(nomeVar, tipoVar);
         }
         return null;
@@ -114,11 +111,12 @@ public class LASemantico extends LABaseVisitor<Void> {
                     escoposAninhados.criarNovoEscopo();
                     VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), TipoLA.REGISTRO, id.getStart());
                     visitTipo(ctx.tipo());
+                    escopoAtual.getVariavel(ident.getText()).tipo_registro = escoposAninhados.obterEscopoAtual();
                     escoposAninhados.abandonarEscopo();
                     if( escopoAtual.getTabelaRegistro("ponto1")!= null){
+
                         System.out.println("TEste aqui");
-                    }else{
-                        System.out.println("Voltando nulo");
+                        System.out.println("Voltando nao nulo " + escopoAtual.verificar("ponto1"));
                     }
 
                 }
