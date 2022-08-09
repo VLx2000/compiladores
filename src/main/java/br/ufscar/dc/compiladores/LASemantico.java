@@ -98,6 +98,12 @@ public class LASemantico extends LABaseVisitor<Void> {
         if (ctx.variavel() != null) {
             //System.out.println("LOCAL\n");
             visitVariavel(ctx.variavel());
+        }else if(ctx.tipo() != null ){
+            //Possivel fazer verificaao a respeito do registro
+            //Se for o tipo for registro, poderia fazer algo do tipo: Criar uma variavel registro
+            //Com o mesmo nome e copiar a tabela dela pra toda variavel pesse tipo
+            //Seria necessario verificar, na verificação de tipo, se a string que ta recebendo tem o nome de algum registro
+            visitTipo(ctx.tipo());
         }
         return null;
     }
@@ -151,9 +157,6 @@ public class LASemantico extends LABaseVisitor<Void> {
 
     @Override 
     public Void visitRegistro(RegistroContext ctx){
-      
-        
-         
         for(VariavelContext var: ctx.variavel()){
             visitVariavel(var);
         }

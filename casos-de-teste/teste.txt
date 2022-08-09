@@ -1,18 +1,30 @@
-{ dada uma variável, modificar seu conteúdo usando apenas seu endereço }
+{ dados o nome, o preço e o tipo dos vinhos (indicados aqui por "T" para tinto, "B" para branco ou "R" para rosê, descrever o vinho mais caro; não são considerados vinhos de preços iguais; fim dos dados indicado por nome = "fim" }
 
 algoritmo
-	declare valor: inteiro { um inteiro comum }
-	declare ponteiro: ^inteiro { um ponteiro para inteiro }
+	tipo tVinho: registro
+						nome,
+						tipoVinho: literal
+						preco: real
+					fim_registro
+	declare
+		tVinho, vinho, vinhoCaro: tVinho
 
-	{ atribuição de um dado inicial }
-	valor <- 100
+	{ repetição para leitura dos dados }
+	vinhoCaro.preco <- -1 	{ para forçar a troca na primeira vez }
+	faca	
+		{ dados }
+		leia(vinho.nome, vinho.Preco, vinho.tipoVinho)
 
-	{ determinação do endereço da variável }
-	ponteiro <- &valor
+		{ verificação do maior preço }
+		se vinho.preco > vinhoCaro.preco e vinho.nome <> "fim" entao
+			vinhoCaro <- vinho 		{ copia tudo }
+		fim_se
+	ate vinho.nome = "fim"
 
-	{ uso do ponteiro para mexer na memória }
-	^ponteiro <- "200"
-
-	{ verificação do valor armazenado em valor }
-	escreva(valor) { 200!!! }
+	{ apresentação do resultado }
+	se vinhoCaro.preco = -1 entao
+		escreva("Nenhum vinho foi apresentado.")
+	senao
+		escreva(vinhoCaro.nome, vinhoCaro.preco, vinhocaro.tipoVinho)
+	fim_se
 fim_algoritmo
