@@ -5,7 +5,9 @@ import org.antlr.v4.runtime.Token;
 import br.ufscar.dc.compiladores.LAParser.CmdAtribuicaoContext;
 import br.ufscar.dc.compiladores.LAParser.CmdContext;
 import br.ufscar.dc.compiladores.LAParser.CmdEscrevaContext;
+import br.ufscar.dc.compiladores.LAParser.CmdFacaContext;
 import br.ufscar.dc.compiladores.LAParser.CmdLeiaContext;
+import br.ufscar.dc.compiladores.LAParser.CmdSeContext;
 import br.ufscar.dc.compiladores.LAParser.Declaracao_localContext;
 import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
 import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
@@ -263,6 +265,25 @@ public class LASemantico extends LABaseVisitor<Void> {
         }
         return null;
     }
+    @Override
+    public Void visitCmdFaca(CmdFacaContext ctx){
+        for(CmdContext cmd : ctx.cmd()){
+            visitCmd(cmd);
+        }
+        visitExpressao(ctx.expressao());
+        return null;
+    }
+
+    @Override
+    public Void visitCmdSe(CmdSeContext ctx){
+        visitExpressao(ctx.expressao());
+        for(CmdContext cmd : ctx.cmd()){
+            visitCmd(cmd);
+        }
+        return null;
+    }
+    
+
     @Override
     public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx){
         //System.out.println("\n\nATRIBUICAO" + ctx.start);
