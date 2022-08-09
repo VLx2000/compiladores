@@ -1,15 +1,18 @@
-{ determinar, em R3, qual de dois pontos é o mais próximo da origem }
+{ dada uma variável, modificar seu conteúdo usando apenas seu endereço }
 
 algoritmo
-	declare
-		ponto1, ponto2: registro
-								x, y, z: real
-							fim_registro
+	declare valor: inteiro { um inteiro comum }
+	declare ponteiro: ^inteiro { um ponteiro para inteiro }
 
-	ponto1.x <- "teste"
+	{ atribuição de um dado inicial }
+	valor <- 100
 
-	{ leitura das coordenadas dos pontos }
-	leia(ponto1.x, ponto1.y, ponto1.z)
-	leia(ponto2.x, ponto2.y, ponto2.z)
-	
+	{ determinação do endereço da variável }
+	ponteiro <- &valor
+
+	{ uso do ponteiro para mexer na memória }
+	^ponteiro <- "200"
+
+	{ verificação do valor armazenado em valor }
+	escreva(valor) { 200!!! }
 fim_algoritmo

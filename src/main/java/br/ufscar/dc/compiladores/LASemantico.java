@@ -1,5 +1,7 @@
 package br.ufscar.dc.compiladores;
 
+import java.util.regex.Pattern;
+
 import org.antlr.v4.runtime.Token;
 
 import br.ufscar.dc.compiladores.LAParser.CmdAtribuicaoContext;
@@ -102,8 +104,8 @@ public class LASemantico extends LABaseVisitor<Void> {
 
     @Override
     public Void visitVariavel(LAParser.VariavelContext ctx){
-        //System.out.println("VARIAVEL\n");
-        
+        System.out.println("VARIAVEL\n");
+        System.out.println(ctx.getText());
         TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
         if(ctx.tipo().registro() != null){
             for(LAParser.IdentificadorContext id : ctx.identificador()){
@@ -113,23 +115,16 @@ public class LASemantico extends LABaseVisitor<Void> {
                     visitTipo(ctx.tipo());
                     escopoAtual.getVariavel(ident.getText()).tipo_registro = escoposAninhados.obterEscopoAtual();
                     escoposAninhados.abandonarEscopo();
-                    if( escopoAtual.getTabelaRegistro("ponto1")!= null){
-
-                        System.out.println("TEste aqui");
-                        System.out.println("Voltando nao nulo " + escopoAtual.verificar("ponto1"));
-                    }
-
                 }
     
             }
 
         }else{
             TipoLA tipoVar = verificaTipoBasico(ctx.tipo().getText());
-        
+
 
             visitTipo(ctx.tipo());
-    
-            //TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+            if(escopoAtual == null) { System.out.println("AQUI\n");}
             
             for(LAParser.IdentificadorContext id : ctx.identificador()){
                 for(var ident: id.IDENT()){
@@ -137,7 +132,6 @@ public class LASemantico extends LABaseVisitor<Void> {
                 }
     
             }
-            System.out.println(escopoAtual.verificar("x"));
 
         }
 
@@ -175,28 +169,42 @@ public class LASemantico extends LABaseVisitor<Void> {
 
     @Override
     public Void visitTipo_basico_ident(Tipo_basico_identContext ctx) {
-        //System.out.println("Tipo BASICO IDENT\n");
         if(ctx.tipo_basico() == null){
             LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
             "tipo " + ctx.getText() + " nao declarado");
-            //System.out.println("tipo " + ctx.getText() + " nao declarado");
         }
         return null;
     }
 
     @Override
     public Void visitIdentificador(IdentificadorContext ctx) {
-        //System.out.println("IDENTFICADOR\n");
-        //System.out.println(escopo.existe("sobrenome"));
+        System.out.println(ctx.getText());
+        boolean found = false;
         for (TabelaDeSimbolos escopoAtual : escoposAninhados.percorrerEscoposAninhados()) {
-            
-            for(var ident: ctx.IDENT()){
-                if (!escopoAtual.existe(ident.getText())) {// n sei pq aqui tem q ser get 0
-
+            TabelaDeSimbolos escopo_de_verificacao = escopoAtual;
+            if(ctx.getText().contains(".")){
+                String nomeReg = ctx.getText().split(Pattern.quote("."))[0];
+                if(!escopoAtual.existe(nomeReg)){
                     LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-                    "identificador " + ident.getText() + " nao declarado");
+                    "identificador " + ctx.getText() + " nao declarado");
+                }else{
+                    for(var ident: ctx.IDENT()){
+                        if (escopo_de_verificacao.existe(ident.getText())) {// n sei pq aqui tem q ser get 0
+                            found = true;
+                        }
+        
+                    }
                 }
+            }else{
+                if(escopo_de_verificacao.existe(ctx.getText())){
+                    found = true;
+                }
+            
             }
+        }    
+        if(!found){
+            LASemanticoUtils.adicionarErroSemantico(ctx.start, 
+            "identificador " + ctx.getText() + " nao declarado");
         }
         return null;
     }
@@ -264,28 +272,70 @@ public class LASemantico extends LABaseVisitor<Void> {
     }
     @Override
     public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx){
-        System.out.println("\n\nATRIBUICAO" + ctx.start);
+        System.out.println("\n\nATRIBUICAO");
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
 
-        TipoLA tipoid = LASemanticoUtils.verificarTipo(tabela, ctx.identificador());
-        System.out.println(tipoid);
+        
 
-        TipoLA tipoexp = LASemanticoUtils.verificarTipo(tabela, ctx.expressao());
-        if(tipoexp != TipoLA.INVALIDO){
-            if (!tabela.existe(ctx.identificador().getText())) {
-                LASemanticoUtils.adicionarErroSemantico(ctx.start, "identificador " + ctx.identificador().getText() + " nao declarado");
-            } else if (tipoexp != tipoid && !((tipoid == TipoLA.REAL && tipoexp ==TipoLA.INTEIRO)||  (tipoid == TipoLA.INTEIRO && tipoexp ==TipoLA.REAL))) {
-                if(ctx.getText().charAt(0) =='^'){
-                    LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para ^" + ctx.identificador().getText());
+        if(ctx.identificador().getText().contains(".")){
+            String[] vars = ctx.identificador().getText().split(Pattern.quote("."));
+
+            String nomeReg = vars[0];
+            String nomeVar= vars[1];
+
+            if(tabela.existe(nomeReg) && tabela.verificar(nomeReg) == TipoLA.REGISTRO){
+                TabelaDeSimbolos escopo_registro = tabela.getTabelaRegistro(nomeReg);
+
+                if(!escopo_registro.existe(nomeVar)){
+
+                    LASemanticoUtils.adicionarErroSemantico(ctx.start, 
+                    "identificador " + ctx.identificador().getText() + " nao declarado");
                 }else{
-                    LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
+                    TipoLA tipoVar = escopo_registro.verificar(nomeVar);
+                    TipoLA tipoExp = LASemanticoUtils.verificarTipo(escopo_registro, ctx.expressao());
+
+                    if(tipoVar != tipoExp && !((tipoVar == TipoLA.REAL && tipoExp == TipoLA.INTEIRO)||
+                                                    tipoVar == TipoLA.INTEIRO && tipoExp ==TipoLA.REAL)){
+                        LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());                                
+
+                    }
                 }
 
             }
-        } else {
-            LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
+        }else{
+            TipoLA tipoid = LASemanticoUtils.verificarTipo(tabela, ctx.identificador());
+
+            TipoLA tipoexp = LASemanticoUtils.verificarTipo(tabela, ctx.expressao());
+            if(tipoexp != TipoLA.INVALIDO){
+                if (!tabela.existe(ctx.identificador().getText())) {
+                    LASemanticoUtils.adicionarErroSemantico(ctx.start, "identificador " + ctx.identificador().getText() + " nao declarado");
+                } else if (tipoexp != tipoid && !((tipoid == TipoLA.REAL && tipoexp ==TipoLA.INTEIRO)||  (tipoid == TipoLA.INTEIRO && tipoexp ==TipoLA.REAL))) {
+                    if(ctx.getText().charAt(0) =='^'){
+                        LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para ^" + ctx.identificador().getText());
+                    }else{
+                        LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
+                    }
+    
+                }
+            } else {
+                LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
+            }
+            System.out.println(tipoexp);
+
         }
-        System.out.println(tipoexp);
+
+
+        // if(tabela.existe(ctx.identificador().getText()) && tabela.verificar(ctx.identificador().getText()) == TipoLA.REGISTRO){
+        //     TabelaDeSimbolos variaveis_registros = tabela.getTabelaRegistro(ctx.identificador().getText());
+        //     if(variaveis_registros !=null){
+        //         System.out.println(ctx.identificador().getText() + " não é nulo");
+        //     }else{
+        //         System.out.println("É nulo");
+        //     }
+        // }
+        
+
+       
         return null;
     }
 }
