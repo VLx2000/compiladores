@@ -10,17 +10,24 @@ public class TabelaDeSimbolos {
         INVALIDO,
         LITERAL,
         LOGICO,
-        CADEIA
+        REGISTRO
 
     }
     
     class EntradaTabelaDeSimbolos {
         String nome;
         TipoLA tipo;
+        TabelaDeSimbolos tipo_registro;
 
         private EntradaTabelaDeSimbolos(String nome, TipoLA tipo) {
             this.nome = nome;
             this.tipo = tipo;
+            this.tipo_registro  = null;
+        }
+        private EntradaTabelaDeSimbolos(String nome, TipoLA tipo,TabelaDeSimbolos tabela_registro){
+            this.nome = nome;
+            this.tipo = tipo;
+            this.tipo_registro = tabela_registro;
         }
     }
     
@@ -34,6 +41,10 @@ public class TabelaDeSimbolos {
         tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo));
     }
     
+    public void adicionar_registro(String nome, TipoLA tipo, TabelaDeSimbolos tabela_registro){
+        tabela.put(nome,new EntradaTabelaDeSimbolos(nome, tipo,tabela_registro));
+    }
+
     public boolean existe(String nome) {
         return tabela.containsKey(nome);
     }

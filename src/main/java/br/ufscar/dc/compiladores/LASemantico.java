@@ -9,7 +9,9 @@ import br.ufscar.dc.compiladores.LAParser.CmdLeiaContext;
 import br.ufscar.dc.compiladores.LAParser.Declaracao_localContext;
 import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
 import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
+import br.ufscar.dc.compiladores.LAParser.RegistroContext;
 import br.ufscar.dc.compiladores.LAParser.Tipo_basico_identContext;
+import br.ufscar.dc.compiladores.LAParser.VariavelContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
 public class LASemantico extends LABaseVisitor<Void> {
@@ -63,6 +65,9 @@ public class LASemantico extends LABaseVisitor<Void> {
                 "identificador " + nomeVar + " ja declarado anteriormente");
                 //System.out.println("DUAS VEZES " + nomeVar+"\n");
         } else {
+            if(tipoVar == TipoLA.REGISTRO){
+                escopoAtual.adicionar_registro(nomeVar,tipoVar,new TabelaDeSimbolos())
+            }
             escopoAtual.adicionar(nomeVar, tipoVar);
         }
         return null;
@@ -101,14 +106,29 @@ public class LASemantico extends LABaseVisitor<Void> {
     @Override
     public Void visitVariavel(LAParser.VariavelContext ctx){
         //System.out.println("VARIAVEL\n");
+        
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        if(ctx.tipo().registro() != null){
+            for(LAParser.IdentificadorContext id : ctx.identificador()){
+                for(var ident: id.IDENT()){
+                    System.out.println(ident.getText());
+                    VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), TipoLA.REGISTRO, id.getStart());
+                }
+    
+            }
+
+        }
+
         TipoLA tipoVar = verificaTipoBasico(ctx.tipo().getText());
+        
 
         visitTipo(ctx.tipo());
 
         TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
-    
+        
         for(LAParser.IdentificadorContext id : ctx.identificador()){
             for(var ident: id.IDENT()){
+                System.out.println(ident.getText());
                 VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), tipoVar, id.getStart());
             }
 
@@ -122,6 +142,17 @@ public class LASemantico extends LABaseVisitor<Void> {
             visitRegistro(ctx.registro());
         }else if(ctx.tipo_estendido() != null){
             visitTipo_estendido(ctx.tipo_estendido());
+        }
+        return null;
+    }
+
+    @Override 
+    public Void visitRegistro(RegistroContext ctx){
+      
+        
+         
+        for(VariavelContext var: ctx.variavel()){
+            visitVariavel(var);
         }
         return null;
     }
