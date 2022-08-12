@@ -178,15 +178,51 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         });
         return null;
     }
-/*
+
     @Override
-    public Void visitSubAlgoritmo(LAParser.SubAlgoritmoContext ctx) {
-        saida.append("{\n");
-        ctx.comando().forEach(cmd -> visitComando(cmd));
-        saida.append("}\n");
+    public Void visitCmdCaso(LAParser.CmdCasoContext ctx) {
+        
+        saida.append("\tswitch ( ");
+        visitExp_aritmetica(ctx.exp_aritmetica());
+        saida.append(" ) {\n");
+        for (LAParser.Item_selecaoContext item : ctx.selecao().item_selecao()) {
+            visitItem_selecao(item);
+        }
+        saida.append("\tdefault:\n\t\tbreak;\n");
+        saida.append("\t}\n");
         return null;
     }
-*/
+
+    @Override
+    public Void visitItem_selecao(LAParser.Item_selecaoContext ctx) {
+
+        Integer inicio = Integer.parseInt(ctx.constantes().numero_intervalo(0).NUM_INT(0).getText());
+        if (ctx.constantes().numero_intervalo(0).NUM_INT(1) != null){
+            Integer fim = Integer.parseInt(ctx.constantes().numero_intervalo(0).NUM_INT(1).getText());
+            for (int i = inicio; i <= fim; i++){
+                saida.append("\tcase ");
+                saida.append(i);
+                saida.append(":\n");
+                for (LAParser.CmdContext cmd : ctx.cmd()) {
+                    saida.append("\t");
+                    visitCmd(cmd);
+                    saida.append("\t\tbreak;\n");
+                }
+            }
+        }
+        else {
+            saida.append("\tcase ");
+            saida.append(ctx.constantes().numero_intervalo(0).NUM_INT(0).getText());
+            saida.append(":\n");
+            for (LAParser.CmdContext cmd : ctx.cmd()) {
+                saida.append("\t");
+                visitCmd(cmd);
+                saida.append("\t\tbreak;\n");
+            }
+        }
+        return null;
+    }
+
     @Override
     public Void visitExp_aritmetica(LAParser.Exp_aritmeticaContext ctx) {
         visitTermo(ctx.termo(0));
