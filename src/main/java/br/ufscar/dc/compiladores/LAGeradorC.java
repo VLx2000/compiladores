@@ -123,12 +123,12 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
     @Override
     public Void visitCmdEnquanto(LAParser.CmdEnquantoContext ctx) {
-        saida.append("while(");
+        saida.append("\twhile(");
         visitExp_relacional(ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional());
         saida.append(") {\n");
         for (LAParser.CmdContext cmd : ctx.cmd()) {
+            saida.append("\t");
             visitCmd(cmd);
-            saida.append("\n");
         }
         saida.append("\t}\n");
         return null;

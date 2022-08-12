@@ -183,7 +183,7 @@ IDENT					: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
 
 // Cadeia de caracteres
 //considera como a sequência de escape ou qualquer coisa menos aspas, barras e quebra de linha
-CADEIA 					: '"' ( ESC_SEQ | ~('"'|'\\'|'\n') )* '"';
+CADEIA 					: '"' ( ESC_SEQ | ~('"') )* '"';
 //regra auxiliar para permitir \'' em cadeias
 fragment ESC_SEQ : '\\\'';
 
