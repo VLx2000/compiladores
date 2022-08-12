@@ -145,7 +145,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
     @Override
     public Void visitCmdEscreva(LAParser.CmdEscrevaContext ctx) {
-        saida.append("\tprintf(");
+        
         ctx.expressao().forEach(exp -> { 
             //System.out.println(exp.getText().startsWith("\""));
             if (exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0) != null) {
@@ -165,6 +165,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                     default:
                         break;
                 }
+                saida.append("\tprintf(");
                 if (!exp.getText().startsWith("\"")){
                     saida.append("\"" + aux + "\", ");
                     visitExp_aritmetica(exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
@@ -172,9 +173,9 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                 else{
                     visitExp_aritmetica(exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
                 }
+                saida.append(");\n");
             }
         });
-        saida.append(");\n");
         return null;
     }
 /*
