@@ -17,7 +17,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         saida.append("#include <stdio.h>\n");
         saida.append("#include <stdlib.h>\n");
         saida.append("\n");
-        //ctx.declaracoes().decl_local_global().forEach(dec -> visitDecl_local_global(dec));
+        ctx.declaracoes().decl_local_global().forEach(dec -> visitDecl_local_global(dec));
         saida.append("\n");
         saida.append("int main() {\n");
         ctx.corpo().declaracao_local().forEach(dec -> visitDeclaracao_local(dec));
@@ -29,7 +29,11 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
     @Override
     public Void visitDeclaracao_local(LAParser.Declaracao_localContext ctx) {
-        if (ctx.variavel() != null) {
+
+        if (ctx.IDENT() != null && ctx.tipo_basico() != null && ctx.valor_constante() != null) {
+            saida.append("#define " + ctx.tipo_basico().toString() + " " + ctx.valor_constante().toString());
+        }
+        else if (ctx.variavel() != null) {
             visitVariavel(ctx.variavel());
         }
         return null;
@@ -189,6 +193,22 @@ public class LAGeradorC extends LABaseVisitor<Void> {
             visitItem_selecao(item);
         }
         saida.append("\tdefault:\n\t\tbreak;\n");
+        saida.append("\t}\n");
+        return null;
+    }
+
+    @Override
+    public Void visitCmdPara(LAParser.CmdParaContext ctx) {
+        
+        saida.append("\tfor ( ");
+        saida.append(ctx.IDENT() + "=");
+        visitExp_aritmetica(ctx.exp_aritmetica(0));
+        saida.append(";" + ctx.IDENT() + "<=");
+        visitExp_aritmetica(ctx.exp_aritmetica(1));
+        saida.append(";" + ctx.IDENT() + "++) {\n");
+        for (LAParser.CmdContext item : ctx.cmd()) {
+            visitCmd(item);
+        }
         saida.append("\t}\n");
         return null;
     }
