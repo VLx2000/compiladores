@@ -20,6 +20,10 @@ public class Escopos {
         return pilhaDeTabelas.peek();
     }
 
+    public TabelaDeSimbolos obterEscopoGlobal() {
+        return pilhaDeTabelas.peekLast();
+    }
+
     public List<TabelaDeSimbolos> percorrerEscoposAninhados() {
         return pilhaDeTabelas;
     }

@@ -1,29 +1,57 @@
 package br.ufscar.dc.compiladores;
 
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.antlr.v4.runtime.Token;
 
 import br.ufscar.dc.compiladores.LAParser.CmdAtribuicaoContext;
 import br.ufscar.dc.compiladores.LAParser.CmdContext;
-import br.ufscar.dc.compiladores.LAParser.CmdEscrevaContext;
 import br.ufscar.dc.compiladores.LAParser.CmdLeiaContext;
-import br.ufscar.dc.compiladores.LAParser.Declaracao_localContext;
-import br.ufscar.dc.compiladores.LAParser.ExpressaoContext;
-import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
-import br.ufscar.dc.compiladores.LAParser.RegistroContext;
-import br.ufscar.dc.compiladores.LAParser.Tipo_basico_identContext;
-import br.ufscar.dc.compiladores.LAParser.VariavelContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
 public class LASemantico extends LABaseVisitor<Void> {
 
-    Escopos escoposAninhados = new Escopos();
-    TabelaDeSimbolos tabela;
+    static Escopos escoposAninhados = new Escopos();
+    static HashMap<String, ArrayList<TipoLA>> funcoes = new HashMap<>(); 
+    HashMap<String, ArrayList<String>> registros = new HashMap<>();
+    HashMap<String, String> unarios = new HashMap<>();
 
+    public void insereVarEscopoAtual(String nomeVar, String tipoVar, Token nomeToken, Token tipoToken) {
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        TabelaDeSimbolos escopoGlobal = escoposAninhados.obterEscopoGlobal();
+        TipoLA tipo = verificaTipoBasico(tipoVar);
+
+        if (tipo == TipoLA.INVALIDO) {
+            LASemanticoUtils.adicionarErroSemantico(tipoToken, "tipo " + tipoVar + " nao declarado");
+        }
+
+        if (!escopoAtual.existe(nomeVar) && !escopoGlobal.existe(nomeVar)) {
+            escopoAtual.adicionar(nomeVar, tipo);
+        }
+        else {
+            LASemanticoUtils.adicionarErroSemantico(nomeToken, "identificador " + nomeVar + " ja declarado anteriormente");
+        }
+
+    }
+
+    public String verificaDimensao(LAParser.IdentificadorContext ident) {
+        String nomeVar;
+        if (ident.dimensao().exp_aritmetica().size() > 0) {
+            nomeVar = ident.IDENT(0).getText();
+        } else {
+            nomeVar = ident.getText();
+        }
+        return nomeVar;
+    }
+    
     public TipoLA verificaTipoBasico(String strTipoVar) {
 
         //System.out.println("TIPO BASICO\n");
+
+        if (registros.containsKey(strTipoVar)) {
+            return TipoLA.REGISTRO;
+        }
 
         TipoLA tipoVar = TipoLA.INVALIDO;
         switch (strTipoVar) {
@@ -51,6 +79,9 @@ public class LASemantico extends LABaseVisitor<Void> {
             case "^logico":
                 tipoVar = TipoLA.LOGICO;
                 break;
+            case "registro":
+                tipoVar = TipoLA.REGISTRO;
+                break;
             default:
                 // Nunca irá acontecer, pois o analisador sintático
                 // não permite
@@ -60,285 +91,210 @@ public class LASemantico extends LABaseVisitor<Void> {
         return tipoVar;
     }
 
-    public Void VerificaDeclaradaDuasVezes(TabelaDeSimbolos escopoAtual, String nomeVar, 
-                                    TipoLA tipoVar, Token start) {
-        if (escopoAtual.existe(nomeVar)) {
-            LASemanticoUtils.adicionarErroSemantico(start,
-                "identificador " + nomeVar + " ja declarado anteriormente");
-                //System.out.println("DUAS VEZES " + nomeVar+"\n");
-        } else {
-            escopoAtual.adicionar(nomeVar, tipoVar);
-        }
-        return null;
-    }
-
     @Override
     public Void visitPrograma(LAParser.ProgramaContext ctx) {
-        tabela = new TabelaDeSimbolos();
         return super.visitPrograma(ctx);
     }
 
     @Override
-    public Void visitDeclaracoes(LAParser.DeclaracoesContext ctx){
-        //System.out.println("Declaracoes");
-        for(LAParser.Decl_local_globalContext dec : ctx.decl_local_global()){
-            visitDecl_local_global(dec);
+    public Void visitCorpo(LAParser.CorpoContext ctx){
+        escoposAninhados.criarNovoEscopo();
+        for (LAParser.CmdContext cmd : ctx.cmd()) {
+            if (cmd.cmdRetorne() != null) {
+                LASemanticoUtils.adicionarErroSemantico(cmd.getStart(), "comando retorne nao permitido nesse escopo");
+            }
         }
-        return null;
+            
+        return super.visitCorpo(ctx);
     }
 
-    @Override
-    public Void visitDecl_local_global(LAParser.Decl_local_globalContext ctx){
-        //System.out.println("LOCALGLOBAL\n");
-        visitDeclaracao_local(ctx.declaracao_local());
-        return null;
-    }
     @Override
     public Void visitDeclaracao_local(LAParser.Declaracao_localContext ctx) {
-        if (ctx.variavel() != null) {
-            //System.out.println("LOCAL\n");
-            visitVariavel(ctx.variavel());
-        }else if(ctx.tipo() != null ){
-            //Possivel fazer verificaao a respeito do registro
-            //Se for o tipo for registro, poderia fazer algo do tipo: Criar uma variavel registro
-            //Com o mesmo nome e copiar a tabela dela pra toda variavel pesse tipo
-            //Seria necessario verificar, na verificação de tipo, se a string que ta recebendo tem o nome de algum registro
-            visitTipo(ctx.tipo());
-        }
-        return null;
-    }
-
-    @Override
-    public Void visitVariavel(LAParser.VariavelContext ctx){
-        System.out.println("VARIAVEL\n");
-        System.out.println(ctx.getText());
-        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
-        if(ctx.tipo().registro() != null){
-            for(LAParser.IdentificadorContext id : ctx.identificador()){
-                for(var ident: id.IDENT()){
-                    escoposAninhados.criarNovoEscopo();
-                    VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), TipoLA.REGISTRO, id.getStart());
-                    visitTipo(ctx.tipo());
-                    escopoAtual.getVariavel(ident.getText()).tipo_registro = escoposAninhados.obterEscopoAtual();
-                    escoposAninhados.abandonarEscopo();
-                }
-    
-            }
-
-        }else{
-            TipoLA tipoVar = verificaTipoBasico(ctx.tipo().getText());
-
-
-            visitTipo(ctx.tipo());
-            if(escopoAtual == null) { System.out.println("AQUI\n");}
-            
-            for(LAParser.IdentificadorContext id : ctx.identificador()){
-                for(var ident: id.IDENT()){
-                    VerificaDeclaradaDuasVezes(escopoAtual, ident.getText(), tipoVar, id.getStart());
-                }
-    
-            }
-
-        }
-
-
-        return null;
-    }
-
-    @Override
-    public Void visitTipo(LAParser.TipoContext ctx){
-        if(ctx.registro() != null){
-            visitRegistro(ctx.registro());
-        }else if(ctx.tipo_estendido() != null){
-            visitTipo_estendido(ctx.tipo_estendido());
-        }
-        return null;
-    }
-
-    @Override 
-    public Void visitRegistro(RegistroContext ctx){
-        for(VariavelContext var: ctx.variavel()){
-            visitVariavel(var);
-        }
-        return null;
-    }
-
-    @Override
-    public Void visitTipo_estendido(LAParser.Tipo_estendidoContext ctx) {
-        //System.out.println("TIPO ESTENDIDO\n");
-        visitTipo_basico_ident(ctx.tipo_basico_ident());
-        return null;
-    };
-
-    @Override
-    public Void visitTipo_basico_ident(Tipo_basico_identContext ctx) {
-        if(ctx.tipo_basico() == null){
-            LASemanticoUtils.adicionarErroSemantico(ctx.getStart(), 
-            "tipo " + ctx.getText() + " nao declarado");
-        }
-        return null;
-    }
-
-    @Override
-    public Void visitIdentificador(IdentificadorContext ctx) {
-        System.out.println(ctx.getText());
-        boolean found = false;
-        for (TabelaDeSimbolos escopoAtual : escoposAninhados.percorrerEscoposAninhados()) {
-            TabelaDeSimbolos escopo_de_verificacao = escopoAtual;
-            if(ctx.getText().contains(".")){
-                String nomeReg = ctx.getText().split(Pattern.quote("."))[0];
-                if(!escopoAtual.existe(nomeReg)){
-                    LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-                    "identificador " + ctx.getText() + " nao declarado");
-                }else{
-                    for(var ident: ctx.IDENT()){
-                        if (escopo_de_verificacao.existe(ident.getText())) {// n sei pq aqui tem q ser get 0
-                            found = true;
-                        }
         
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        String strTipoVar = null;
+        
+        if (ctx.variavel() != null) {
+            if (ctx.variavel().tipo().registro() != null) {
+                for (LAParser.IdentificadorContext ident : ctx.variavel().identificador()) {
+                    insereVarEscopoAtual(ident.getText(), "registro", ident.getStart(), null);
+                    for (LAParser.VariavelContext vars : ctx.variavel().tipo().registro().variavel()) {
+                        strTipoVar = vars.tipo().getText();
+                        for (LAParser.IdentificadorContext ident_reg : vars.identificador()) {
+                            insereVarEscopoAtual(ident.getText() + '.' + ident_reg.getText(), strTipoVar, ident_reg.getStart(), vars.tipo().getStart());
+                        }
                     }
                 }
-            }else{
-                if(escopo_de_verificacao.existe(ctx.getText())){
-                    found = true;
+            } else {
+                strTipoVar = ctx.variavel().tipo().getText();
+                String nome;
+                if (registros.containsKey(strTipoVar)) {
+                    ArrayList<String> variaveis_registro = registros.get(strTipoVar);
+                    for (LAParser.IdentificadorContext ident : ctx.variavel().identificador()) {
+                        nome = verificaDimensao(ident);
+                        if (escopoAtual.existe(nome) || registros.containsKey(nome)) {
+                            LASemanticoUtils.adicionarErroSemantico(ident.getStart(), "identificador " + nome + " ja declarado anteriormente");
+                        } else {
+                            insereVarEscopoAtual(nome, "registro", ident.getStart(), ctx.variavel().tipo().getStart());
+                            for (int i = 0; i < variaveis_registro.size(); i = i + 2) {
+                                insereVarEscopoAtual(nome + '.' + variaveis_registro.get(i), variaveis_registro.get(i+1), ident.getStart(), ctx.variavel().tipo().getStart());
+                            }
+                        }
+                    }
+                } else if (unarios.containsKey(strTipoVar)) {
+                    strTipoVar = unarios.get(strTipoVar);
+                    for (LAParser.IdentificadorContext ident : ctx.variavel().identificador()) {
+                        insereVarEscopoAtual(ident.getText(), strTipoVar, ident.getStart(), ctx.variavel().tipo().getStart());
+                    }
+                } else {
+                    for (LAParser.IdentificadorContext ident : ctx.variavel().identificador()) {
+                        String nomeVar = verificaDimensao(ident);
+                        if (funcoes.containsKey(nomeVar)) {
+                            LASemanticoUtils.adicionarErroSemantico(ident.getStart(), "identificador " + nomeVar + " ja declarado anteriormente");
+                        } else {
+                            insereVarEscopoAtual(nomeVar, strTipoVar, ident.getStart(), ctx.variavel().tipo().getStart());
+                        }
+                    }
                 }
-            
             }
-        }    
-        if(!found){
-            LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-            "identificador " + ctx.getText() + " nao declarado");
+        } else if (ctx.tipo_basico() != null) {
+            strTipoVar = ctx.tipo_basico().getText();
+            insereVarEscopoAtual(ctx.IDENT().getText(), strTipoVar, ctx.IDENT().getSymbol(), ctx.IDENT().getSymbol());
+        } else {
+            if (ctx.tipo().registro() != null) {
+                ArrayList<String> variaveis_registro = new ArrayList<String>();
+                for (LAParser.VariavelContext vars : ctx.tipo().registro().variavel()) {
+                    strTipoVar = vars.tipo().getText();
+                    for (LAParser.IdentificadorContext ident_registro : vars.identificador()) {
+                        variaveis_registro.add(ident_registro.getText());
+                        variaveis_registro.add(vars.tipo().getText());
+                    }
+                }
+                registros.put(ctx.IDENT().getText(), variaveis_registro);
+            } else {
+                strTipoVar = ctx.tipo().getText();
+                unarios.put(ctx.IDENT().getText(), strTipoVar);
+            }
         }
-        return null;
+
+        return super.visitDeclaracao_local(ctx);
     }
 
-    @Override
-    public Void visitCorpo(LAParser.CorpoContext ctx){
-        //System.out.println("CORPO\n");
-        for(Declaracao_localContext dl: ctx.declaracao_local()){
-            visitDeclaracao_local(dl);
-        }
 
-        for(CmdContext cmd : ctx.cmd()){
-            visitCmd(cmd);
-        }
-        return null;
-    }
-
+    
     @Override
     public Void visitCmd(CmdContext ctx){
-        if(ctx.cmdLeia()!= null){
-            visitCmdLeia(ctx.cmdLeia());
-        }
-        if(ctx.cmdEscreva()!= null){
-            visitCmdEscreva(ctx.cmdEscreva());
-        }
-        if(ctx.cmdSe()!= null){
-            visitCmdSe(ctx.cmdSe());
-        }
-        if(ctx.cmdCaso()!= null){
-            visitCmdCaso(ctx.cmdCaso());
-        }
-        if(ctx.cmdPara()!= null){
-            visitCmdPara(ctx.cmdPara());
-        }
-        if(ctx.cmdEnquanto()!= null){
-            visitCmdEnquanto(ctx.cmdEnquanto());
-        }
-        if(ctx.cmdFaca()!= null){
-            visitCmdFaca(ctx.cmdFaca());
-        }
         if(ctx.cmdAtribuicao()!= null){
-            visitCmdAtribuicao(ctx.cmdAtribuicao());
+            return visitCmdAtribuicao(ctx.cmdAtribuicao());
         }
-        if(ctx.cmdChamada()!= null){
-            visitCmdRetorne(ctx.cmdRetorne());
+        else if(ctx.cmdLeia()!= null){
+            return visitCmdLeia(ctx.cmdLeia());
         }
+        else if(ctx.cmdEscreva()!= null){
+            return visitCmdEscreva(ctx.cmdEscreva());
+        }
+        else if(ctx.cmdSe()!= null){
+            return visitCmdSe(ctx.cmdSe());
+        }
+        else if(ctx.cmdCaso()!= null){
+            return visitCmdCaso(ctx.cmdCaso());
+        }
+        else if(ctx.cmdPara()!= null){
+            return visitCmdPara(ctx.cmdPara());
+        }
+        else if(ctx.cmdEnquanto()!= null){
+            return visitCmdEnquanto(ctx.cmdEnquanto());
+        }
+        else if(ctx.cmdFaca()!= null){
+            return visitCmdFaca(ctx.cmdFaca());
+        }
+        else if(ctx.cmdChamada()!= null){
+            return visitCmdChamada(ctx.cmdChamada());
+        }
+        else if (ctx.cmdRetorne() != null) {
+            return visitCmdRetorne(ctx.cmdRetorne());
+        }
+
         return null;
+    }
+
+    @Override
+    public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx){
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        TipoLA tipoExpressao = LASemanticoUtils.verificarTipo(escopoAtual, ctx.expressao());
+        String strVar = verificaDimensao(ctx.identificador());
+
+        if (tipoExpressao != TipoLA.INVALIDO) {
+            if (!escopoAtual.existe(strVar)) {
+                LASemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
+            } else {
+                TipoLA tipoVar = LASemanticoUtils.verificarTipo(escopoAtual, strVar);
+                if (tipoVar != tipoExpressao) {
+                    if ( !(((tipoVar == TipoLA.REAL) || (tipoVar == TipoLA.INTEIRO)) & ((tipoExpressao == TipoLA.INTEIRO) || (tipoExpressao == TipoLA.REAL))) ) {
+                        if (ctx.ponteiro != null) {
+                            LASemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para ^" + ctx.identificador().getText());
+                        } else {
+                            LASemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + ctx.identificador().getText());
+                        }
+                    }
+                }
+            }
+        } else {
+            LASemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + ctx.identificador().getText());
+        }
+        return super.visitCmdAtribuicao(ctx);
     }
 
     @Override
     public Void visitCmdLeia(CmdLeiaContext ctx){
-        //System.out.println("LEIA\n");
-        for(IdentificadorContext id:ctx.identificador()){
-            visitIdentificador(id);
-        }
-        return null;
-    }
-
-    @Override
-    public Void visitCmdEscreva(CmdEscrevaContext ctx){
-        for(ExpressaoContext exp : ctx.expressao()){
-            visitExpressao(exp);
-        }
-        return null;
-    }
-    @Override
-    public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx){
-        System.out.println("\n\nATRIBUICAO");
-        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
-
-        
-
-        if(ctx.identificador().getText().contains(".")){
-            String[] vars = ctx.identificador().getText().split(Pattern.quote("."));
-
-            String nomeReg = vars[0];
-            String nomeVar= vars[1];
-
-            if(tabela.existe(nomeReg) && tabela.verificar(nomeReg) == TipoLA.REGISTRO){
-                TabelaDeSimbolos escopo_registro = tabela.getTabelaRegistro(nomeReg);
-
-                if(!escopo_registro.existe(nomeVar)){
-
-                    LASemanticoUtils.adicionarErroSemantico(ctx.start, 
-                    "identificador " + ctx.identificador().getText() + " nao declarado");
-                }else{
-                    TipoLA tipoVar = escopo_registro.verificar(nomeVar);
-                    TipoLA tipoExp = LASemanticoUtils.verificarTipo(escopo_registro, ctx.expressao());
-
-                    if(tipoVar != tipoExp && !((tipoVar == TipoLA.REAL && tipoExp == TipoLA.INTEIRO)||
-                                                    tipoVar == TipoLA.INTEIRO && tipoExp ==TipoLA.REAL)){
-                        LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());                                
-
-                    }
-                }
-
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        String nomeVar;        
+        for (LAParser.IdentificadorContext identificador : ctx.identificador()) {
+            nomeVar = verificaDimensao(identificador);
+            if (!escopoAtual.existe(nomeVar)) {
+                LASemanticoUtils.adicionarErroSemantico(identificador.getStart(), "identificador " + identificador.getText() + " nao declarado");
             }
-        }else{
-            TipoLA tipoid = LASemanticoUtils.verificarTipo(tabela, ctx.identificador());
+        }
+        return super.visitCmdLeia(ctx);
+    }
 
-            TipoLA tipoexp = LASemanticoUtils.verificarTipo(tabela, ctx.expressao());
-            if(tipoexp != TipoLA.INVALIDO){
-                if (!tabela.existe(ctx.identificador().getText())) {
-                    LASemanticoUtils.adicionarErroSemantico(ctx.start, "identificador " + ctx.identificador().getText() + " nao declarado");
-                } else if (tipoexp != tipoid && !((tipoid == TipoLA.REAL && tipoexp ==TipoLA.INTEIRO)||  (tipoid == TipoLA.INTEIRO && tipoexp ==TipoLA.REAL))) {
-                    if(ctx.getText().charAt(0) =='^'){
-                        LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para ^" + ctx.identificador().getText());
-                    }else{
-                        LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
-                    }
+    @Override
+    public Void visitCmdEscreva(LAParser.CmdEscrevaContext ctx) {
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        TipoLA tipoExpressao;
+        for (LAParser.ExpressaoContext expressao : ctx.expressao()) {
+            tipoExpressao = LASemanticoUtils.verificarTipo(escopoAtual, expressao);
+        }
+        return super.visitCmdEscreva(ctx);
+    }
+
+    @Override
+    public Void visitCmdSe(LAParser.CmdSeContext ctx) {
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        TipoLA tipoExpressao = LASemanticoUtils.verificarTipo(escopoAtual, ctx.expressao());
+        return super.visitCmdSe(ctx);
+    }
+
+    @Override
+    public Void visitCmdEnquanto(LAParser.CmdEnquantoContext ctx) { 
+        return super.visitCmdEnquanto(ctx);
+    }
+
+    @Override 
+    public Void visitCmdCaso(LAParser.CmdCasoContext ctx) {
+        ctx.cmd().forEach(cmd -> visitCmd(cmd));
+        return super.visitCmdCaso(ctx);
+    }
+
+    @Override 
+    public Void visitCmdPara(LAParser.CmdParaContext ctx) {
+        TabelaDeSimbolos escopoAtual = escoposAninhados.obterEscopoAtual();
+        if (!escopoAtual.existe(ctx.IDENT().getText())) {
+            LASemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(), "identificador " + ctx.IDENT().getText() + " nao declarado");
+        }
+        ctx.exp_aritmetica().forEach(expr_arit -> LASemanticoUtils.verificarTipo(escopoAtual, expr_arit));
+        ctx.cmd().forEach(cmd -> visitCmd(cmd));
+        return super.visitCmdPara(ctx);
+    }
     
-                }
-            } else {
-                LASemanticoUtils.adicionarErroSemantico(ctx.start, "atribuicao nao compativel para " + ctx.identificador().getText());
-            }
-            System.out.println(tipoexp);
-
-        }
-
-
-        // if(tabela.existe(ctx.identificador().getText()) && tabela.verificar(ctx.identificador().getText()) == TipoLA.REGISTRO){
-        //     TabelaDeSimbolos variaveis_registros = tabela.getTabelaRegistro(ctx.identificador().getText());
-        //     if(variaveis_registros !=null){
-        //         System.out.println(ctx.identificador().getText() + " não é nulo");
-        //     }else{
-        //         System.out.println("É nulo");
-        //     }
-        // }
-        
-
-       
-        return null;
-    }
 }

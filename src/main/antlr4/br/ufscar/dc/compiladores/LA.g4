@@ -56,7 +56,7 @@ registro
 
 declaracao_global
 	:	'procedimento' IDENT '(' (parametros)? ')' (declaracao_local)* (cmd)* 'fim_procedimento'
-	|	'funcao' IDENT '(' (parametros)? ')' ':' tipo_estendido (declaracao_local)* (cmd)* 'fim_funcao'
+	|	(funcao='funcao') IDENT '(' (parametros)? ')' ':' tipo_estendido (declaracao_local)* (cmd)* 'fim_funcao'
 	;
 
 parametro
@@ -95,7 +95,7 @@ cmdFaca
 	: 'faca' cmd* 'ate' expressao
 	;
 cmdAtribuicao
-	: '^'? identificador '<-' expressao
+	: (ponteiro='^')? identificador '<-' expressao
 	;
 cmdChamada
 	: IDENT '(' expressao (',' expressao)* ')'

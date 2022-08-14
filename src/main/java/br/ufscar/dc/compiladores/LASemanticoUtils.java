@@ -20,8 +20,13 @@ public class LASemanticoUtils {
     public static TipoLA verificarIncompativel(TabelaDeSimbolos.TipoLA aux, Token start, String text, TabelaDeSimbolos.TipoLA ret) {
         if (ret == null) {
             ret = aux;
-        } else if (ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO && !((ret == TipoLA.INTEIRO && aux ==TipoLA.REAL)||ret == TipoLA.REAL && aux ==TipoLA.INTEIRO ) ) {
-            ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+        } else if (ret != aux && aux != TabelaDeSimbolos.TipoLA.INVALIDO) {
+            if ((ret == TipoLA.INTEIRO && aux ==TipoLA.REAL) || ret == TipoLA.REAL && aux ==TipoLA.INTEIRO ) {
+                ret = TabelaDeSimbolos.TipoLA.REAL;
+            } else {
+                ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+            }
+            
         }
         return ret;
     }
@@ -72,13 +77,26 @@ public class LASemanticoUtils {
 
         TabelaDeSimbolos.TipoLA ret = null;
         if(ctx.identificador() != null){
-            //System.out.println("AQUI1\n");
-            ret =  verificarTipo(tabela, ctx.identificador());
+            String nomeVar;
+            if (ctx.identificador().dimensao().exp_aritmetica().size() > 0) {
+                nomeVar = ctx.identificador().IDENT(0).getText();
+            } else {
+                nomeVar = ctx.identificador().getText();
+            }
+            if (tabela.existe(nomeVar)) {
+                ret = tabela.verificar(nomeVar);
+            } else {
+                TabelaDeSimbolos escopoGlobal = LASemantico.escoposAninhados.obterEscopoGlobal();
+                if (escopoGlobal.existe(nomeVar)) {
+                    ret = escopoGlobal.verificar(nomeVar);
+                } else {
+                    adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
+                    ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+                }
+            }
         }else if(ctx.IDENT() != null){
             //System.out.println("AQUI2\n");
-            for(var exp: ctx.expressao()){
-                ret = verificarIncompativel(verificarTipo(tabela, exp), ctx.start, ctx.getText(), ret);
-            }
+             
         }       
         else if(ctx.NUM_INT()!= null){
             //System.out.println("AQUI3\n");
@@ -87,23 +105,24 @@ public class LASemanticoUtils {
             //System.out.println("AQUI4\n");
             ret =  TabelaDeSimbolos.TipoLA.REAL;
         }else{
-            //System.out.println("AQUI5\n");
-            for(var exp: ctx.expressao()){
-                ret = verificarIncompativel(verificarTipo(tabela, exp), ctx.start, ctx.getText(), ret);
-            }
+            ret = verificarTipo(tabela, ctx.expressao().get(0));
         }
         return ret;
     }
 
     private static TipoLA verificarTipo(TabelaDeSimbolos tabela, Parcela_nao_unarioContext ctx) {
         //System.out.println("VERIFICA nao unario\n");
-        TabelaDeSimbolos.TipoLA ret = null;
-        if(ctx.identificador() != null){
-            ret =  verificarTipo(tabela, ctx.identificador());
-        }if(ctx.CADEIA() != null){
-            ret =  TabelaDeSimbolos.TipoLA.LITERAL;
+        if (ctx.CADEIA() != null) {
+            return TabelaDeSimbolos.TipoLA.LITERAL;
+        } else {
+            String nomeVar = ctx.identificador().getText();
+            if (!tabela.existe(nomeVar)) {
+                adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + nomeVar + " nao declarado");
+                return TabelaDeSimbolos.TipoLA.INVALIDO;
+            } else {
+                return tabela.verificar(nomeVar);
+            }
         }
-        return ret;
     }
 
     public static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.ExpressaoContext ctx) {
@@ -156,17 +175,6 @@ public class LASemanticoUtils {
         } else {
             return exp1;
         }
-    }
-
-    public static TipoLA verificarTipo(TabelaDeSimbolos tabela, LAParser.IdentificadorContext ctx) {
-        TabelaDeSimbolos.TipoLA ret = null;
-        //System.out.println("VERIFICAID\n");
-        for (var id : ctx.IDENT()) {
-            //System.out.println("" + id.getText() + ", ");
-            ret = verificarIncompativel(verificarTipo(tabela, id.getText()), ctx.start, ctx.getText(), ret);
-        }
-
-        return ret;
     }
 
     public static TabelaDeSimbolos.TipoLA verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
