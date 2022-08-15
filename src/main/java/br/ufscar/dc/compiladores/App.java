@@ -5,10 +5,10 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-/* import org.antlr.v4.runtime.Token;
- */
+
 import br.ufscar.dc.compiladores.LAParser.ProgramaContext;
 
 public class App {
@@ -24,25 +24,25 @@ public class App {
         try (PrintWriter pw = new PrintWriter(new FileWriter(saida))) {
             CommonTokenStream tokens = new CommonTokenStream(lex);
             LAParser parser = new LAParser(tokens);
-
+            
+            /* Analisador sintatico */
             // Registrando o error lister personalizado
-            //MensagensCustomizadas msgs = new MensagensCustomizadas(pw, false);
+            MensagensCustomizadas msgs = new MensagensCustomizadas(pw, false);
             //parser.removeErrorListeners();
-            //parser.addErrorListener(msgs);
-            //System.out.println("aqui");
+            parser.addErrorListener(msgs);
             ProgramaContext arvore = parser.programa();
+
+            /* Analisador semantico */
             LASemantico as = new LASemantico();
             as.visitPrograma(arvore);
-            LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s + "\n"));
-            //pw.write("Fim da compilacao\n");
-            /*
+            LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s));
+
             Token t = null;
             Integer line;
-            String regra, token, erroLexico = "", resultado = "";
+            String regra, token, erroLexico = "";
 
-            // O loop continuará até ler todo o arquivo ou até haver algum
-            // erro: token não identificado, comentario ou cadeia não fechada
-            while ((t = lex.nextToken()).getType() != Token.EOF && erroLexico.isEmpty()) {
+            /* Analisador lexico */
+            while ((t = lex.nextToken()).getType() != Token.EOF) {
                 // Obtendo linha atual
                 line = t.getLine();
                 // Obtendo token atual
@@ -52,51 +52,26 @@ public class App {
 
                 // Condição em que algum token não foi identificado
                 if (regra.equals("SIMBOLO_DESCONHECIDO")) {
-                    erroLexico = ("Linha " + line + ": " + token + " - simbolo nao identificado\n");
-                    resultado += erroLexico;
+                    erroLexico += ("Linha " + line + ": " + token + " - simbolo nao identificado\n");
                 }
                 // Condição em que um comentário { } não foi fechado corretamente
                 else if (regra.equals("COMENTARIO_N_FECHADO")) {
-                    erroLexico = ("Linha " + line + ": comentario nao fechado\n");
-                    resultado += erroLexico;
+                    erroLexico += ("Linha " + line + ": comentario nao fechado\n");
                 }
                 // Condição em que uma cadeia " " não foi fechada corretamente
                 else if (regra.equals("CADEIA_N_FECHADA")) {
-                    erroLexico = ("Linha " + line + ": cadeia literal nao fechada\n");
-                    resultado += erroLexico;
+                    erroLexico += ("Linha " + line + ": cadeia literal nao fechada\n");
                 }
                 // Se não for um dos casos acima será impresso o token com sua regra neste
                 // formato
                 else {
-                    resultado += ("<\'" + token + "\'," + regra + ">\n");
+                    erroLexico += ("<\'" + token + "\'," + regra + ">\n");
                 }
             }
-            if (erroLexico.isEmpty()) {
-                // Resetando fluxo de tokens para a análise sintática
-                lex.reset();
-                
-                CommonTokenStream tokens = new CommonTokenStream(lex);
-                LAParser parser = new LAParser(tokens);
-
-                // Registrando o error lister personalizado
-                MensagensCustomizadas msgs = new MensagensCustomizadas(pw, false);
-                //parser.removeErrorListeners();
-                parser.addErrorListener(msgs);
-
-                ProgramaContext arvore = parser.programa();
-                LASemantico as = new LASemantico();
-                as.visitPrograma(arvore);
-                LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s));
-            }
+            pw.write(erroLexico);
             
-            if (!erroLexico.isEmpty()) {
-                pw.write(erroLexico);
-                pw.write("Fim da compilacao\n");
-                pw.close(); // Fechando arquivo escrito
-            }
-        
-            pw.write(resultado);*/
-            if(LASemanticoUtils.errosSemanticos.isEmpty()) {
+            /* Gerador de codigo */
+            if(LASemanticoUtils.errosSemanticos.isEmpty() && erroLexico.isEmpty()) { //sintatico para a execuçao antes de chegar aqui
                 LAGeradorC agc = new LAGeradorC();
                 agc.visitPrograma(arvore);
                 pw.print(agc.saida.toString());
