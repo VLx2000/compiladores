@@ -34,7 +34,7 @@ public class App {
             LASemantico as = new LASemantico();
             as.visitPrograma(arvore);
             LASemanticoUtils.errosSemanticos.forEach((s) -> pw.write(s + "\n"));
-            pw.write("Fim da compilacao\n");
+            //pw.write("Fim da compilacao\n");
             /*
             Token t = null;
             Integer line;
@@ -96,6 +96,11 @@ public class App {
             }
         
             pw.write(resultado);*/
+            if(LASemanticoUtils.errosSemanticos.isEmpty()) {
+                LAGeradorC agc = new LAGeradorC();
+                agc.visitPrograma(arvore);
+                pw.print(agc.saida.toString());
+            }
             pw.close(); // Fechando arquivo escrito
             
         } catch (IOException ex) {
