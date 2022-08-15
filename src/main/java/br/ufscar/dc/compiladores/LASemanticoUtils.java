@@ -96,7 +96,21 @@ public class LASemanticoUtils {
             }
         }else if(ctx.IDENT() != null){
             //System.out.println("AQUI2\n");
-             
+            if (LASemantico.funcoes.containsKey(ctx.IDENT().getText())) {
+                List<TabelaDeSimbolos.TipoLA> aux = LASemantico.funcoes.get(ctx.IDENT().getText());
+                if (aux.size()-1 == ctx.expressao().size()) {
+                    for (int i = 0; i < ctx.expressao().size(); i++) {
+                        if (aux.get(i) != verificarTipo(tabela, ctx.expressao().get(i))) {
+                            adicionarErroSemantico(ctx.expressao().get(i).getStart(), "incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
+                        }
+                    }
+                    ret = aux.get(aux.size()-1);
+                } else {
+                    adicionarErroSemantico(ctx.IDENT().getSymbol(), "incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
+                }
+            } else {
+                ret = TabelaDeSimbolos.TipoLA.INVALIDO;
+            }
         }       
         else if(ctx.NUM_INT()!= null){
             //System.out.println("AQUI3\n");

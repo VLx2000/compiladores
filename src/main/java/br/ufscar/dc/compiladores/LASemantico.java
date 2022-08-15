@@ -35,6 +35,30 @@ public class LASemantico extends LABaseVisitor<Void> {
 
     }
 
+    public void adicionaParametros(LAParser.Declaracao_globalContext ctx, ArrayList<TipoLA> parametros) {
+        for (LAParser.ParametroContext p : ctx.parametros().parametro()) {
+            if (p.tipo_estendido().tipo_basico_ident().tipo_basico() != null) {
+                for (LAParser.IdentificadorContext ident : p.identificador()) {
+                    insereVarEscopoAtual(ident.getText(), p.tipo_estendido().getText(), ident.getStart(), p.tipo_estendido().getStart());
+                    parametros.add(verificaTipoBasico(p.tipo_estendido().getText()));
+                }
+            } 
+            else if (registros.containsKey(p.tipo_estendido().tipo_basico_ident().IDENT().getText())) {
+                ArrayList<String> reg_vars = registros.get(p.tipo_estendido().tipo_basico_ident().IDENT().getText());
+                for (LAParser.IdentificadorContext ident : p.identificador()) {
+                    parametros.add(verificaTipoBasico(p.tipo_estendido().tipo_basico_ident().IDENT().getText()));
+                    for (int i = 0; i < reg_vars.size(); i = i + 2) {
+                        insereVarEscopoAtual(ident.getText() + '.' + reg_vars.get(i), reg_vars.get(i+1), ident.getStart(), ident.getStart());
+                   }
+                }
+            } 
+            else {
+                    LASemanticoUtils.adicionarErroSemantico(p.getStart(), "tipo nao declarado");
+            }
+            
+        }
+    }
+
     public String verificaDimensao(LAParser.IdentificadorContext ident) {
         String nomeVar;
         if (ident.dimensao().exp_aritmetica().size() > 0) {
@@ -180,7 +204,30 @@ public class LASemantico extends LABaseVisitor<Void> {
         return super.visitDeclaracao_local(ctx);
     }
 
+    
 
+    @Override 
+    public Void visitDeclaracao_global(LAParser.Declaracao_globalContext ctx) { 
+        escoposAninhados.criarNovoEscopo();
+        ArrayList<TipoLA> parametros = new ArrayList<TipoLA>();
+
+        adicionaParametros(ctx, parametros);
+        
+        if (ctx.funcao != null) { 
+            //Função
+            parametros.add(verificaTipoBasico(ctx.tipo_estendido().getText()));
+            funcoes.put(ctx.IDENT().getText(), parametros);
+        } else {
+            //Procedimento
+            for (LAParser.CmdContext comando : ctx.cmd()) {
+                if (comando.cmdRetorne() != null) {
+                    LASemanticoUtils.adicionarErroSemantico(comando.getStart(), "comando retorne nao permitido nesse escopo");
+                }
+            }
+            funcoes.put(ctx.IDENT().getText(), parametros);
+        }
+        return super.visitDeclaracao_global(ctx);
+    }
     
     @Override
     public Void visitCmd(CmdContext ctx){
