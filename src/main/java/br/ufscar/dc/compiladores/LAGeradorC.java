@@ -31,7 +31,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     public Void visitDeclaracao_local(LAParser.Declaracao_localContext ctx) {
 
         if (ctx.IDENT() != null && ctx.tipo_basico() != null && ctx.valor_constante() != null) {
-            saida.append("#define " + ctx.tipo_basico().toString() + " " + ctx.valor_constante().toString());
+            saida.append("#define " + ctx.IDENT().getText() + " " + ctx.valor_constante().getText());
         }
         else if (ctx.variavel() != null) {
             visitVariavel(ctx.variavel());
