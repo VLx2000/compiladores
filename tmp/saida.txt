@@ -3,15 +3,15 @@
 
 
 int main() {
-struct{
+	typedef struct {
 	char nome[80];
 	int idade;
-} reg;
+treg registronome:literalidade:inteirofim_registro	treg reg;
 	strcpy(reg.nome,"Maria");
-	reg.idade = 24;
-	printf("", reg);
+	reg.idade = 30;
+	printf("%s", reg.nome);
 	printf(" tem ");
-	printf("", reg);
+	printf("%d", reg.idade);
 	printf(" anos");
 	return 0;
 }

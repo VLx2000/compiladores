@@ -56,6 +56,17 @@ public class LAGeradorC extends LABaseVisitor<Void> {
             saida.append("#define " + ctx.IDENT().getText() + " " + ctx.valor_constante().getText());
         } else if (ctx.variavel() != null) {
             visitVariavel(ctx.variavel());
+        }else if(ctx.tipo() != null) {
+            if(ctx.tipo().registro() != null){
+                saida.append("\ttypedef struct {\n");
+                for(VariavelContext var : ctx.tipo().registro().variavel()){
+                    visitVariavel(var);
+                }
+                saida.append("} " + ctx.IDENT().getText() + ";\n");
+                
+            }
+            //System.out.println(ctx.IDENT() + " " + ctx.tipo().getText());
+            //saida.append(ctx.IDENT() + " " + ctx.tipo().getText());
         }
         return null;
     }
@@ -82,6 +93,11 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         }else{
             TabelaDeSimbolos.TipoLA tipoVar = TabelaDeSimbolos.TipoLA.INVALIDO;
             // saida.append(strTipoVar + " " + nomeVar + ";\n");
+
+            if(tabela.existe(strTipoVar)==true && tabela.verificar(strTipoVar)==TipoLA.REGISTRO){
+                tipoVar = TipoLA.REGISTRO;
+            }
+
             switch (strTipoVar) {
                 case "inteiro":
                     tipoVar = TabelaDeSimbolos.TipoLA.INTEIRO;
@@ -108,10 +124,11 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                     // não permite
                     break;
             }
+
             saida.append("\t" + strTipoVar + " ");
             for (int i = 0; i < ctx.identificador().size(); i++) {
-                String nomeVar = ctx.identificador(i).IDENT(0).toString();
-    
+                String nomeVar = ctx.identificador(i).IDENT(0).getText();
+                System.out.println(nomeVar);
                 // Podemos adicionar na tabela de símbolos sem verificar
                 // pois a análise semântica já fez as verificações
                 tabela.adicionar(nomeVar, tipoVar);
@@ -376,7 +393,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         } else if (ctx.NUM_REAL() != null) {
             saida.append(ctx.NUM_REAL().getText());
         } else if (ctx.identificador() != null) {
-            if (ctx.identificador().IDENT(0) != null) {
+            if (ctx.identificador() != null) {
                 saida.append(ctx.identificador().getText());
             }
         } else if ((ctx.expressao(0).termo_logico(0).fator_logico(0) != null)) {
