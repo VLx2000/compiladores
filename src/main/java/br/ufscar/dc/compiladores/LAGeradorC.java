@@ -52,6 +52,14 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                 tipoVar = TabelaDeSimbolos.TipoLA.REAL;
                 strTipoVar = "float";
                 break;
+            case "^inteiro":
+                tipoVar = TabelaDeSimbolos.TipoLA.INTEIRO;
+                strTipoVar = "int*";
+                break;
+            case "^real":
+                tipoVar = TabelaDeSimbolos.TipoLA.REAL;
+                strTipoVar = "float*";
+                break;
             case "literal":
                 tipoVar = TabelaDeSimbolos.TipoLA.LITERAL;
                 strTipoVar = "char";
@@ -81,6 +89,10 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
     @Override
     public Void visitCmdAtribuicao(LAParser.CmdAtribuicaoContext ctx) {
+        //System.out.println(ctx.getText());
+        if (ctx.getText().contains("^")){
+            saida.append("*");
+        }
         saida.append("\t" + ctx.identificador().IDENT(0).getText() + " = ");
         visitExp_aritmetica(
                 ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
@@ -280,38 +292,60 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     public Void visitFator_logico(LAParser.Fator_logicoContext ctx) {
         if ((ctx.getText().contains("nao"))) {
             saida.append("!(");
+            visitExp_relacional(ctx.parcela_logica().exp_relacional());
+            saida.append(")");
         }
-        visitExp_relacional(ctx.parcela_logica().exp_relacional());
-        saida.append(")");
+        else {
+            visitExp_relacional(ctx.parcela_logica().exp_relacional());
+        }
         return null;
     }
 
     @Override
     public Void visitParcela(LAParser.ParcelaContext ctx) {
-        System.out.println(ctx.getText());
+        //System.out.println(ctx.getText());
         if (ctx.parcela_nao_unario() != null) {
-            String aux = ctx.parcela_nao_unario().CADEIA().getText();
-            // aux = aux.substring(0, aux.length() - 1);
-            saida.append(aux);
+            visitParcela_nao_unario(ctx.parcela_nao_unario());
         }
         if (ctx.parcela_unario() != null) {
-            if (ctx.parcela_unario().NUM_INT() != null) {
-                saida.append(ctx.parcela_unario().NUM_INT().getText());
-            } else if (ctx.parcela_unario().NUM_REAL() != null) {
-                saida.append(ctx.parcela_unario().NUM_REAL().getText());
-            } else if (ctx.parcela_unario().identificador() != null) {
-                if (ctx.parcela_unario().identificador().IDENT(0) != null) {
-                    saida.append(ctx.parcela_unario().identificador().IDENT(0).getText());
-                }
-            } else if ((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0) != null)) {
-                    //System.out.println((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).getText()));
-                    visitExp_relacional((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0)
-                            .parcela_logica().exp_relacional()));
-            } else {
-                saida.append("(");
-                // visitExp_aritmetica(ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
-                saida.append(")");
+            visitParcela_unario(ctx.parcela_unario());
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitParcela_nao_unario(LAParser.Parcela_nao_unarioContext ctx) {
+        if (ctx.CADEIA() != null) {
+            String aux = ctx.CADEIA().getText();
+            // aux = aux.substring(0, aux.length() - 1);
+            saida.append(aux);
+        } else if ((ctx.identificador() != null) ) {
+            if (ctx.getText().contains("&")){
+                saida.append("&");
             }
+            saida.append(ctx.identificador().IDENT(0));
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitParcela_unario(LAParser.Parcela_unarioContext ctx) {
+        if (ctx.NUM_INT() != null) {
+            saida.append(ctx.NUM_INT().getText());
+        } else if (ctx.NUM_REAL() != null) {
+            saida.append(ctx.NUM_REAL().getText());
+        } else if (ctx.identificador() != null) {
+            if (ctx.identificador().IDENT(0) != null) {
+                saida.append(ctx.identificador().IDENT(0).getText());
+            }
+        } else if ((ctx.expressao(0).termo_logico(0).fator_logico(0) != null)) {
+                //System.out.println((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).getText()));
+                visitExp_relacional((ctx.expressao(0).termo_logico(0).fator_logico(0)
+                        .parcela_logica().exp_relacional()));
+        } else {
+            saida.append("(");
+            // visitExp_aritmetica(ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
+            saida.append(")");
         }
         return null;
     }
@@ -322,6 +356,14 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         if (ctx.op_relacional() != null) {
             visitOp_relacional(ctx.op_relacional());
             visitExp_aritmetica(ctx.exp_aritmetica(1));
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitTipo_estendido(LAParser.Tipo_estendidoContext ctx) {
+        if ((ctx.getText().contains("^"))) {
+            saida.append("*");
         }
         return null;
     }
