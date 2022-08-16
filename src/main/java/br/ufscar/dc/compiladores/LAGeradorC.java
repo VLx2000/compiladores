@@ -32,8 +32,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
         if (ctx.IDENT() != null && ctx.tipo_basico() != null && ctx.valor_constante() != null) {
             saida.append("#define " + ctx.IDENT().getText() + " " + ctx.valor_constante().getText());
-        }
-        else if (ctx.variavel() != null) {
+        } else if (ctx.variavel() != null) {
             visitVariavel(ctx.variavel());
         }
         return null;
@@ -43,7 +42,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     public Void visitVariavel(LAParser.VariavelContext ctx) {
         String strTipoVar = ctx.tipo().getText();
         TabelaDeSimbolos.TipoLA tipoVar = TabelaDeSimbolos.TipoLA.INVALIDO;
-        //saida.append(strTipoVar + " " + nomeVar + ";\n");
+        // saida.append(strTipoVar + " " + nomeVar + ";\n");
         switch (strTipoVar) {
             case "inteiro":
                 tipoVar = TabelaDeSimbolos.TipoLA.INTEIRO;
@@ -65,12 +64,12 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         saida.append("\t" + strTipoVar + " ");
         for (int i = 0; i < ctx.identificador().size(); i++) {
             String nomeVar = ctx.identificador(i).IDENT(0).toString();
-            
+
             // Podemos adicionar na tabela de símbolos sem verificar
             // pois a análise semântica já fez as verificações
             tabela.adicionar(nomeVar, tipoVar);
             if (strTipoVar.equals("char"))
-                saida.append(nomeVar + "[80]" /*+ ctx.identificador(0).dimensao().toString()*/);
+                saida.append(nomeVar + "[80]" /* + ctx.identificador(0).dimensao().toString() */);
             else
                 saida.append(nomeVar);
             if (i < ctx.identificador().size() - 1)
@@ -83,7 +82,8 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     @Override
     public Void visitCmdAtribuicao(LAParser.CmdAtribuicaoContext ctx) {
         saida.append("\t" + ctx.identificador().IDENT(0).getText() + " = ");
-        visitExp_aritmetica(ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
+        visitExp_aritmetica(
+                ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
         saida.append(";\n");
         return null;
     }
@@ -140,20 +140,23 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
     @Override
     public Void visitCmdFaca(LAParser.CmdFacaContext ctx) {
-        saida.append(" {\n\t");
-        visitExp_relacional(ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional());
-        saida.append(")\n");
-        visitCmd(ctx.cmd(0));
+        saida.append("\tdo {\n\t");
+        for (LAParser.CmdContext item : ctx.cmd()) {
+            visitCmd(item);
+        }
+        saida.append("\t} while (");
+        visitFator_logico(ctx.expressao().termo_logico(0).fator_logico(0));
+        saida.append(");\n");
         return null;
     }
 
     @Override
     public Void visitCmdEscreva(LAParser.CmdEscrevaContext ctx) {
-        
-        ctx.expressao().forEach(exp -> { 
-            //System.out.println(exp.getText().startsWith("\""));
+
+        ctx.expressao().forEach(exp -> {
+            // System.out.println(exp.getText().startsWith("\""));
             if (exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0) != null) {
-            
+
                 TipoLA tipoExpressao = LASemanticoUtils.verificarTipo(tabela, exp);
                 String aux = "";
                 switch (tipoExpressao) {
@@ -170,12 +173,13 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                         break;
                 }
                 saida.append("\tprintf(");
-                if (!exp.getText().startsWith("\"")){
+                if (!exp.getText().startsWith("\"")) {
                     saida.append("\"" + aux + "\", ");
-                    visitExp_aritmetica(exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
-                }
-                else{
-                    visitExp_aritmetica(exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
+                    visitExp_aritmetica(
+                            exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
+                } else {
+                    visitExp_aritmetica(
+                            exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
                 }
                 saida.append(");\n");
             }
@@ -185,7 +189,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
     @Override
     public Void visitCmdCaso(LAParser.CmdCasoContext ctx) {
-        
+
         saida.append("\tswitch ( ");
         visitExp_aritmetica(ctx.exp_aritmetica());
         saida.append(" ) {\n");
@@ -199,7 +203,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
 
     @Override
     public Void visitCmdPara(LAParser.CmdParaContext ctx) {
-        
+
         saida.append("\tfor ( ");
         saida.append(ctx.IDENT() + "=");
         visitExp_aritmetica(ctx.exp_aritmetica(0));
@@ -217,9 +221,9 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     public Void visitItem_selecao(LAParser.Item_selecaoContext ctx) {
 
         Integer inicio = Integer.parseInt(ctx.constantes().numero_intervalo(0).NUM_INT(0).getText());
-        if (ctx.constantes().numero_intervalo(0).NUM_INT(1) != null){
+        if (ctx.constantes().numero_intervalo(0).NUM_INT(1) != null) {
             Integer fim = Integer.parseInt(ctx.constantes().numero_intervalo(0).NUM_INT(1).getText());
-            for (int i = inicio; i <= fim; i++){
+            for (int i = inicio; i <= fim; i++) {
                 saida.append("\tcase ");
                 saida.append(i);
                 saida.append(":\n");
@@ -229,8 +233,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                     saida.append("\t\tbreak;\n");
                 }
             }
-        }
-        else {
+        } else {
             saida.append("\tcase ");
             saida.append(ctx.constantes().numero_intervalo(0).NUM_INT(0).getText());
             saida.append(":\n");
@@ -274,22 +277,39 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     }
 
     @Override
+    public Void visitFator_logico(LAParser.Fator_logicoContext ctx) {
+        if ((ctx.getText().contains("nao"))) {
+            saida.append("!(");
+        }
+        visitExp_relacional(ctx.parcela_logica().exp_relacional());
+        saida.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitParcela(LAParser.ParcelaContext ctx) {
-        if (ctx.parcela_nao_unario() != null){
+        System.out.println(ctx.getText());
+        if (ctx.parcela_nao_unario() != null) {
             String aux = ctx.parcela_nao_unario().CADEIA().getText();
-            //aux = aux.substring(0, aux.length() - 1);
+            // aux = aux.substring(0, aux.length() - 1);
             saida.append(aux);
         }
-        if (ctx.parcela_unario() != null){
+        if (ctx.parcela_unario() != null) {
             if (ctx.parcela_unario().NUM_INT() != null) {
                 saida.append(ctx.parcela_unario().NUM_INT().getText());
             } else if (ctx.parcela_unario().NUM_REAL() != null) {
                 saida.append(ctx.parcela_unario().NUM_REAL().getText());
-            } else if (ctx.parcela_unario().identificador().IDENT(0) != null) {
-                saida.append(ctx.parcela_unario().identificador().IDENT(0).getText());
+            } else if (ctx.parcela_unario().identificador() != null) {
+                if (ctx.parcela_unario().identificador().IDENT(0) != null) {
+                    saida.append(ctx.parcela_unario().identificador().IDENT(0).getText());
+                }
+            } else if ((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0) != null)) {
+                    //System.out.println((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).getText()));
+                    visitExp_relacional((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0)
+                            .parcela_logica().exp_relacional()));
             } else {
                 saida.append("(");
-                //visitExp_aritmetica(ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
+                // visitExp_aritmetica(ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
                 saida.append(")");
             }
         }
@@ -299,7 +319,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     @Override
     public Void visitExp_relacional(LAParser.Exp_relacionalContext ctx) {
         visitExp_aritmetica(ctx.exp_aritmetica(0));
-        if (ctx.op_relacional() != null){
+        if (ctx.op_relacional() != null) {
             visitOp_relacional(ctx.op_relacional());
             visitExp_aritmetica(ctx.exp_aritmetica(1));
         }
