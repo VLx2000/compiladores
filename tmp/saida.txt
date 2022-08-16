@@ -3,13 +3,15 @@
 
 
 int main() {
-	int x;
-	int* endx;
-	x = 0;
-	printf("%d", x);
-	printf(" e ");
-	endx = &x;
-*	endx = 1;
-	printf("%d", x);
+struct{
+	char nome[80];
+	int idade;
+} reg;
+	strcpy(reg.nome,"Maria");
+	reg.idade = 24;
+	printf("", reg);
+	printf(" tem ");
+	printf("", reg);
+	printf(" anos");
 	return 0;
 }

@@ -1,5 +1,9 @@
 package br.ufscar.dc.compiladores;
 
+import java.util.regex.Pattern;
+
+import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
+import br.ufscar.dc.compiladores.LAParser.VariavelContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
 public class LAGeradorC extends LABaseVisitor<Void> {
@@ -10,6 +14,24 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     public LAGeradorC() {
         saida = new StringBuilder();
         this.tabela = new TabelaDeSimbolos();
+    }
+
+    String verificaTipoExpressao(TipoLA tipoExpressao){
+        String aux = "";
+        switch (tipoExpressao) {
+            case INTEIRO:
+                aux = "%d";
+                break;
+            case REAL:
+                aux = "%f";
+                break;
+            case LITERAL:
+                aux = "%s";
+                break;
+            default:
+                break;
+        }
+        return aux;
     }
 
     @Override
@@ -41,49 +63,69 @@ public class LAGeradorC extends LABaseVisitor<Void> {
     @Override
     public Void visitVariavel(LAParser.VariavelContext ctx) {
         String strTipoVar = ctx.tipo().getText();
-        TabelaDeSimbolos.TipoLA tipoVar = TabelaDeSimbolos.TipoLA.INVALIDO;
-        // saida.append(strTipoVar + " " + nomeVar + ";\n");
-        switch (strTipoVar) {
-            case "inteiro":
-                tipoVar = TabelaDeSimbolos.TipoLA.INTEIRO;
-                strTipoVar = "int";
-                break;
-            case "real":
-                tipoVar = TabelaDeSimbolos.TipoLA.REAL;
-                strTipoVar = "float";
-                break;
-            case "^inteiro":
-                tipoVar = TabelaDeSimbolos.TipoLA.INTEIRO;
-                strTipoVar = "int*";
-                break;
-            case "^real":
-                tipoVar = TabelaDeSimbolos.TipoLA.REAL;
-                strTipoVar = "float*";
-                break;
-            case "literal":
-                tipoVar = TabelaDeSimbolos.TipoLA.LITERAL;
-                strTipoVar = "char";
-                break;
-            default:
-                // Nunca irá acontecer, pois o analisador sintático
-                // não permite
-                break;
-        }
-        saida.append("\t" + strTipoVar + " ");
-        for (int i = 0; i < ctx.identificador().size(); i++) {
-            String nomeVar = ctx.identificador(i).IDENT(0).toString();
+        if(ctx.tipo().registro() != null){
+            saida.append("struct{\n");
+            for(VariavelContext var : ctx.tipo().registro().variavel()){
+                visitVariavel(var);
+            }
+            if(ctx.identificador().size() > 1){
+                saida.append("} ");
+                int i  = 0;
+                for(i = 0; i<ctx.identificador().size()-1;i++){
+                    saida.append(ctx.identificador().get(i).getText() + ", ");
+                }
+                saida.append(ctx.identificador().get(i).getText() + ";\n");
+            }else{
+                saida.append("} " + ctx.identificador().get(0).getText() + ";\n");
+            }
 
-            // Podemos adicionar na tabela de símbolos sem verificar
-            // pois a análise semântica já fez as verificações
-            tabela.adicionar(nomeVar, tipoVar);
-            if (strTipoVar.equals("char"))
-                saida.append(nomeVar + "[80]" /* + ctx.identificador(0).dimensao().toString() */);
-            else
-                saida.append(nomeVar);
-            if (i < ctx.identificador().size() - 1)
-                saida.append(", ");
+        }else{
+            TabelaDeSimbolos.TipoLA tipoVar = TabelaDeSimbolos.TipoLA.INVALIDO;
+            // saida.append(strTipoVar + " " + nomeVar + ";\n");
+            switch (strTipoVar) {
+                case "inteiro":
+                    tipoVar = TabelaDeSimbolos.TipoLA.INTEIRO;
+                    strTipoVar = "int";
+                    break;
+                case "real":
+                    tipoVar = TabelaDeSimbolos.TipoLA.REAL;
+                    strTipoVar = "float";
+                    break;
+                case "^inteiro":
+                    tipoVar = TabelaDeSimbolos.TipoLA.INTEIRO;
+                    strTipoVar = "int*";
+                    break;
+                case "^real":
+                    tipoVar = TabelaDeSimbolos.TipoLA.REAL;
+                    strTipoVar = "float*";
+                    break;
+                case "literal":
+                    tipoVar = TabelaDeSimbolos.TipoLA.LITERAL;
+                    strTipoVar = "char";
+                    break;
+                default:
+                    // Nunca irá acontecer, pois o analisador sintático
+                    // não permite
+                    break;
+            }
+            saida.append("\t" + strTipoVar + " ");
+            for (int i = 0; i < ctx.identificador().size(); i++) {
+                String nomeVar = ctx.identificador(i).IDENT(0).toString();
+    
+                // Podemos adicionar na tabela de símbolos sem verificar
+                // pois a análise semântica já fez as verificações
+                tabela.adicionar(nomeVar, tipoVar);
+                if (strTipoVar.equals("char"))
+                    saida.append(nomeVar + "[80]" /* + ctx.identificador(0).dimensao().toString() */);
+                else
+                    saida.append(nomeVar);
+                if (i < ctx.identificador().size() - 1)
+                    saida.append(", ");
+            }
+            saida.append(";\n");
+
         }
-        saida.append(";\n");
+
         return null;
     }
 
@@ -93,10 +135,16 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         if (ctx.getText().contains("^")){
             saida.append("*");
         }
-        saida.append("\t" + ctx.identificador().IDENT(0).getText() + " = ");
-        visitExp_aritmetica(
-                ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
-        saida.append(";\n");
+        if(ctx.expressao().getText().contains("\"")){
+            System.out.println(ctx.identificador().getText());
+            saida.append("\tstrcpy(" + ctx.identificador().getText() + ","+ ctx.expressao().getText()+");\n");
+        }else{
+            saida.append("\t" + ctx.identificador().getText() + " = ");
+            visitExp_aritmetica(
+                    ctx.expressao().termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
+            saida.append(";\n");
+        }
+
         return null;
     }
 
@@ -170,21 +218,14 @@ public class LAGeradorC extends LABaseVisitor<Void> {
             if (exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0) != null) {
 
                 TipoLA tipoExpressao = LASemanticoUtils.verificarTipo(tabela, exp);
-                String aux = "";
-                switch (tipoExpressao) {
-                    case INTEIRO:
-                        aux = "%d";
-                        break;
-                    case REAL:
-                        aux = "%f";
-                        break;
-                    case LITERAL:
-                        aux = "%s";
-                        break;
-                    default:
-                        break;
-                }
+                String aux = verificaTipoExpressao(tipoExpressao);
+
+
                 saida.append("\tprintf(");
+                if(exp.getText().contains(".")){
+                    tipoExpressao = tabela.verificar(exp.getText().split(Pattern.quote("."))[1]);
+                    aux = verificaTipoExpressao(tipoExpressao);
+                }
                 if (!exp.getText().startsWith("\"")) {
                     saida.append("\"" + aux + "\", ");
                     visitExp_aritmetica(
@@ -336,7 +377,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
             saida.append(ctx.NUM_REAL().getText());
         } else if (ctx.identificador() != null) {
             if (ctx.identificador().IDENT(0) != null) {
-                saida.append(ctx.identificador().IDENT(0).getText());
+                saida.append(ctx.identificador().getText());
             }
         } else if ((ctx.expressao(0).termo_logico(0).fator_logico(0) != null)) {
                 //System.out.println((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).getText()));
