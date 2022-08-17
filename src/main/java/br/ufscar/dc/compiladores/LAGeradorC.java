@@ -2,7 +2,6 @@ package br.ufscar.dc.compiladores;
 
 import java.util.regex.Pattern;
 
-import br.ufscar.dc.compiladores.LAParser.IdentificadorContext;
 import br.ufscar.dc.compiladores.LAParser.VariavelContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
@@ -138,6 +137,8 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                     saida.append(nomeVar);
                 if (i < ctx.identificador().size() - 1)
                     saida.append(", ");
+                if (ctx.identificador(0).dimensao().exp_aritmetica() != null)
+                    saida.append(ctx.identificador(0).dimensao().getText());
             }
             saida.append(";\n");
 
