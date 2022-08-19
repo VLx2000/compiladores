@@ -2,6 +2,10 @@ package br.ufscar.dc.compiladores;
 
 import java.util.regex.Pattern;
 
+import br.ufscar.dc.compiladores.LAParser.CmdChamadaContext;
+import br.ufscar.dc.compiladores.LAParser.CmdRetorneContext;
+import br.ufscar.dc.compiladores.LAParser.Declaracao_globalContext;
+import br.ufscar.dc.compiladores.LAParser.ParametrosContext;
 import br.ufscar.dc.compiladores.LAParser.VariavelContext;
 import br.ufscar.dc.compiladores.TabelaDeSimbolos.TipoLA;
 
@@ -33,6 +37,52 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         return aux;
     }
 
+    public String getTipo(String tipo) {
+        switch (tipo) {
+            case "inteiro":
+                    return "int";
+                case "real":
+                    return "float";
+                case "^inteiro":
+                    return "int *";
+                case "^real":
+                    return "float *";
+                case "literal":
+                    return "char";
+                case "registro":
+                    return "struct";
+                default:
+                    // Nunca irá acontecer, pois o analisador sintático
+                    // não permite
+                    break;
+        }
+
+        return null;
+    }
+
+    public TipoLA getTipoLA(String tipo) {
+        switch (tipo) {
+            case "inteiro":
+                    return TabelaDeSimbolos.TipoLA.INTEIRO;
+                case "real":
+                    return TabelaDeSimbolos.TipoLA.REAL;
+                case "^inteiro":
+                    return TabelaDeSimbolos.TipoLA.INTEIRO;
+                case "^real":
+                    return TabelaDeSimbolos.TipoLA.REAL;
+                case "literal":
+                    return TabelaDeSimbolos.TipoLA.LITERAL;
+                case "registro":
+                    return TabelaDeSimbolos.TipoLA.REGISTRO;
+                default:
+                    // Nunca irá acontecer, pois o analisador sintático
+                    // não permite
+                    break;
+        }
+
+        return TabelaDeSimbolos.TipoLA.INVALIDO;
+    }
+
     @Override
     public Void visitPrograma(LAParser.ProgramaContext ctx) {
         saida.append("#include <stdio.h>\n");
@@ -45,6 +95,28 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         ctx.corpo().cmd().forEach(cmd -> visitCmd(cmd));
         saida.append("\treturn 0;\n");
         saida.append("}\n");
+        return null;
+    }
+
+    @Override
+    public Void visitDeclaracao_global(Declaracao_globalContext ctx) {
+        if (ctx.funcao != null) {
+            saida.append(getTipo(ctx.tipo_estendido().getText()) + " " + ctx.IDENT().getText() + " (");
+            visitParametros(ctx.parametros());
+            saida.append(") {\n");
+            ctx.declaracao_local().forEach(x -> visitDeclaracao_local(x));
+            ctx.cmd().forEach(cmd -> visit(cmd));
+            saida.append("}\n");           
+        }
+        else {
+            saida.append("void " + ctx.IDENT().getText() + " (");
+            visitParametros(ctx.parametros());
+            saida.append(") {\n");
+            ctx.declaracao_local().forEach(x -> visitDeclaracao_local(x));
+            ctx.cmd().forEach(cmd -> visit(cmd));
+            saida.append("}\n");        
+        }
+
         return null;
     }
 
@@ -453,6 +525,44 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                 break;
         }
         saida.append(" " + aux + " ");
+        return null;
+    }
+
+    @Override
+    public Void visitParametros(ParametrosContext ctx) {
+
+        for (LAParser.ParametroContext p : ctx.parametro()) {
+            String tipoVar = p.tipo_estendido().getText();
+            for (LAParser.IdentificadorContext i : p.identificador()) {
+                tabela.adicionar(i.getText(), getTipoLA(tipoVar));
+                if (getTipo(tipoVar).equals("char")) {
+                    saida.append(getTipo(tipoVar) + "* " + i.getText() + ",");
+                } else {
+                    saida.append(getTipo(tipoVar) + " " + i.getText() + ",");
+                }
+            }
+            saida.deleteCharAt(saida.length()-1);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitCmdChamada(CmdChamadaContext ctx) {
+        saida.append(ctx.IDENT().getText() + "(");
+        for (LAParser.ExpressaoContext exp : ctx.expressao()) {
+            saida.append(exp.getText() + ", ");
+            saida.delete(saida.length()-2, saida.length());
+        }
+        saida.append(");\n");
+
+        return null;
+    }
+
+    @Override
+    public Void visitCmdRetorne(CmdRetorneContext ctx) {
+        saida.append("return ");
+        visitExpressao(ctx.expressao());
+        saida.append(";\n");
         return null;
     }
 }
