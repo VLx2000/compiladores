@@ -324,6 +324,7 @@ public class LAGeradorC extends LABaseVisitor<Void> {
                     visitExp_aritmetica(
                             exp.termo_logico(0).fator_logico(0).parcela_logica().exp_relacional().exp_aritmetica(0));
                 }
+                
                 saida.append(");\n");
             }
         });
@@ -466,11 +467,19 @@ public class LAGeradorC extends LABaseVisitor<Void> {
         } else if (ctx.NUM_REAL() != null) {
             saida.append(ctx.NUM_REAL().getText());
         } else if (ctx.identificador() != null) {
-            if (ctx.identificador() != null) {
-                saida.append(ctx.identificador().getText());
+            saida.append(ctx.identificador().getText());
+        } else if (ctx.IDENT() != null) {
+            System.out.println("xablau");
+            saida.append(ctx.IDENT().getText() + "(");
+            for (LAParser.ExpressaoContext exp : ctx.expressao()) {
+                saida.append(exp.getText() + ", ");
             }
-        } else if ((ctx.expressao(0).termo_logico(0).fator_logico(0) != null)) {
+            saida.delete(saida.length()-2, saida.length());
+            saida.append(")");
+        }
+        else if ((ctx.expressao(0).termo_logico(0).fator_logico(0) != null)) {
                 //System.out.println((ctx.parcela_unario().expressao(0).termo_logico(0).fator_logico(0).getText()));
+                System.out.println("xablinho");
                 visitExp_relacional((ctx.expressao(0).termo_logico(0).fator_logico(0)
                         .parcela_logica().exp_relacional()));
         } else {
